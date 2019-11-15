@@ -6,8 +6,8 @@ public class States {
     public static final int SegDistance2target = 3;    //3 segmentation close:d<=200, medium:200<d<=400, far:d>400
     // private int distanceAfterSeg;
 
-    public static final int SegEnergy = 4;
-    public static final int SegEnergy_Target = 4;
+   // public static final int SegEnergy = 4;
+   // public static final int SegEnergy_Target = 4;
     public static final int SegGeneralLocation = 3; //0:corner 1:edge 2:centre
     public static final int SegGeneralLocation_Target = 3;
 
@@ -31,18 +31,16 @@ public class States {
     public static final int numStates;
 
 
-    private static final int Mapping[][][][][][];
+    private static final int Mapping[][][][];
 
     static {
-        Mapping = new int[SegDistance2target][SegAbsBearingRadians][SegEnergy][SegEnergy_Target][SegX][SegY];
+        Mapping = new int[SegDistance2target][SegAbsBearingRadians][SegX][SegY];
         int count = 0;
         for (int a = 0; a < SegDistance2target; a++)
             for (int b = 0; b < SegAbsBearingRadians; b++)
-                for (int c = 0; c < SegEnergy; c++)
-                    for (int d = 0; d < SegEnergy_Target; d++)
-                        for (int e = 0; e < SegX; e++)
-                            for (int f = 0; f < SegY; f++)
-                                Mapping[a][b][c][d][e][f]= count++;
+                for (int e = 0; e < SegX; e++)
+                    for (int f = 0; f < SegY; f++)
+                        Mapping[a][b][e][f]= count++;
 
 
 
@@ -171,7 +169,7 @@ public class States {
         return (int)(newHeading / unit);
     }*/
 
-    public static int getIndexForStates(int distanceIndex,int absBearingRadiansIndex, int energyIndex, int energyTargetIndex, int generalLocationIndex, int generalLocationTargetIndex) {
-        return Mapping[distanceIndex][absBearingRadiansIndex][energyIndex][energyTargetIndex][generalLocationIndex][generalLocationTargetIndex];
+    public static int getIndexForStates(int distanceIndex,int absBearingRadiansIndex, int xIndex, int yIndex) {
+        return Mapping[distanceIndex][absBearingRadiansIndex][xIndex][yIndex];
     }
 }
