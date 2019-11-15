@@ -449,6 +449,9 @@ public class TanRobo  extends AdvancedRobot implements IBasicEvents, IBasicEvent
         double energyTarget =target.getTargetEnergy();
         int energyTargt_ = States.energyAfterSeg(energyTarget);
 
+        int x_ = States.xAfterSeg(getX());
+        int y_ = States.yAfterSeg(getY());
+
 
         double x = getX();
         double y = getY();
@@ -462,7 +465,7 @@ public class TanRobo  extends AdvancedRobot implements IBasicEvents, IBasicEvent
         int absBearingRadians_ = States.absBearingRadiansAfterSeg(target.getTargetHeadingRadians()+ target.getTargetBearingRadians());
        // int heading_ = States.headingAfterSeg(getHeading());
 
-        int state = States.getIndexForStates(distance_,absBearingRadians_, energy_, energyTargt_, generalLocation_, generalLocationTarget_);
+        int state = States.getIndexForStates(distance_,absBearingRadians_, energy_, energyTargt_, x_, y_);
         return state;
 
     }

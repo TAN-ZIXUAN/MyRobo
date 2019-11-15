@@ -11,8 +11,8 @@ public class States {
     public static final int SegGeneralLocation = 3; //0:corner 1:edge 2:centre
     public static final int SegGeneralLocation_Target = 3;
 
-    public static final int SegX = 4;
-    public static final int SegY = 4;
+    public static final int SegX = 8;
+    public static final int SegY = 6;
 
     //4 segmentation 0:e<=10, 1:10<e<=25, 2:25<e<=45, 3:e>45
     //but I already consider energy problem in fire so maybe I don't need this case.
@@ -34,14 +34,14 @@ public class States {
     private static final int Mapping[][][][][][];
 
     static {
-        Mapping = new int[SegDistance2target][SegAbsBearingRadians][SegEnergy][SegEnergy_Target][SegGeneralLocation][SegGeneralLocation_Target];
+        Mapping = new int[SegDistance2target][SegAbsBearingRadians][SegEnergy][SegEnergy_Target][SegX][SegY];
         int count = 0;
         for (int a = 0; a < SegDistance2target; a++)
             for (int b = 0; b < SegAbsBearingRadians; b++)
                 for (int c = 0; c < SegEnergy; c++)
                     for (int d = 0; d < SegEnergy_Target; d++)
-                        for (int e = 0; e < SegGeneralLocation; e++)
-                            for (int f = 0; f < SegGeneralLocation_Target; f++)
+                        for (int e = 0; e < SegX; e++)
+                            for (int f = 0; f < SegY; f++)
                                 Mapping[a][b][c][d][e][f]= count++;
 
 
@@ -117,6 +117,47 @@ public class States {
         else
             index = 3;
 
+
+        return index;
+    }
+
+    public static int xAfterSeg(double x) {
+        int index;
+        if(x<=100)
+            index = 0;
+        else if (x<=200)
+            index = 1;
+        else if (x<=300)
+            index = 2;
+        else if (x<=400)
+            index = 3;
+        else if (x<=500)
+            index = 4;
+        else if (x<=600)
+            index = 5;
+        else if (x<=700)
+            index = 6;
+        else
+            index =7;
+
+        return index;
+
+    }
+
+    public static int yAfterSeg(double y) {
+        int index;
+        if(y<=100)
+            index = 0;
+        else if (y<=200)
+            index = 1;
+        else if (y<=300)
+            index = 2;
+        else if (y<=400)
+            index = 3;
+        else if (y<=500)
+            index = 4;
+        else
+            index =5;
 
         return index;
     }
