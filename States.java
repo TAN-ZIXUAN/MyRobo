@@ -33,6 +33,7 @@ public class States {
 
     private static final int Mapping[][][][];
 
+
     static {
         Mapping = new int[SegDistance2target][SegAbsBearingRadians][SegX][SegY];
         int count = 0;

@@ -5,7 +5,7 @@ import java.util.Random;
 public class QLearning {
     public static double alpha = 0.5; //learning rate: alpha
     public static double gamma = 0.8; //discount rate: gamma fire has delay rewards
-    public static double epsilon = 0.9; //epsilon-greedy: epsilon for exploration, 1-epsilon for exploitation
+    public static double epsilon = 0.2; //epsilon-greedy: epsilon for exploration, 1-epsilon for exploitation
 /*    private int curtState;
     private int curtAction;*/
 
@@ -31,12 +31,14 @@ public class QLearning {
 
     //on-policy learning
     public void Sarsa( int curtState, int curtAction,int nextState, int nextAction, double reward) {
-        double lastQVal;
-        double newQVal;
+        double Q1;
+        double Q2;
 
-            lastQVal = lut.getQValue(curtState, curtAction);
-            newQVal = lastQVal + alpha*(reward + gamma * lut.getQValue(nextState, nextAction) - lastQVal);
-            lut.setQValue(curtState, curtAction, newQVal);
+            Q1 = lut.getQValue(curtState, curtAction);
+            Q2 = lut.getQValue(nextState,nextAction);
+
+            double newQValue = Q1 + alpha*(reward + gamma *Q2 - Q1);
+            lut.setQValue(curtState, curtAction, newQValue);
 
     }
 
