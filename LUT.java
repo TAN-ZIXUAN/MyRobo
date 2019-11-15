@@ -192,12 +192,10 @@ actions:circle retreat, advance, fire
             bestAction = action;
         }*/
 
-        if (max == 0) {
-            return Actions.robotFire;
-        }
-        else {
+
+
             return bestAct;
-        }
+
     }
 
 
