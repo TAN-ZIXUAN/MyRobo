@@ -22,7 +22,7 @@ public class Actions {
     public static final int robotTurnLeft = 2;
     public static final int robotTurnRight = 3;
     public static final int robotSpin = 4;
-    //public static final int robotFire = 5; //fire with max bullet power:3
+    public static final int robotFire = 5; //fire with max bullet power:3
 
     /*public static final int robotAhead_L = 5;
     public static final int robotBack_L = 6;
@@ -39,7 +39,5 @@ public class Actions {
     public static final double RobotTurnDegree_L =  180.0;
 
 
-
-
-
+    //public static int robotFire;
 }

@@ -4,7 +4,6 @@ import MyRobo.Interface.LUTInterface;
 import robocode.RobocodeFileOutputStream;
 
 import java.io.*;
-import java.util.Collections;
 
 public class LUT implements LUTInterface {
 
@@ -194,7 +193,11 @@ actions:circle retreat, advance, fire
 
 
 
-            return bestAct;
+
+
+
+        return bestAct;
+
 
     }
 

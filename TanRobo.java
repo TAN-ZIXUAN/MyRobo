@@ -14,6 +14,7 @@ import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
+import java.util.Random;
 
 import static robocode.util.Utils.normalRelativeAngleDegrees;
 
@@ -51,11 +52,19 @@ public class TanRobo  extends AdvancedRobot implements IBasicEvents, IBasicEvent
 
     //boolean inWall; //is true when robot is near the wall
 
+    private boolean ifFirstRun = true;
+
+    private int initialState;
+    private int initialAction;
+
+    private int crtState;
+    private int crtAction;
+
+    private int nextState;
+    private int nextAction;
 
     private int state;
     private int action;
-    int curtState;
-    int curtAction;
 
     private boolean offPolicy = true;
 
@@ -123,197 +132,52 @@ public class TanRobo  extends AdvancedRobot implements IBasicEvents, IBasicEvent
                 QLearning.epsilon = 0.9 - count/10.0 ; //round as 0.0
             }
 
-            //QLearning.epsilon = 0.9 - Math.round((count/10.0)*10;
-/*            //double initialEpsilonValue = 0.9;
-            double deltaEpsilon = 0.1;
-            //double lastEpsilon;
-            double crtEpsilon = QLearning.epsilon;
+            if(ifFirstRun) {
 
-            //QLearning.epsilon= initialEpsilonValue;
-            if(getRoundNum() % changePerNRounds == 0&& crtEpsilon >= 0 ) {
-                crtEpsilon =- deltaEpsilon;
-                QLearning.epsilon = crtEpsilon;
-            }*/
+                //initial state
+                initialState = getState();
 
+                //random action
+                Random randomGenerator = new Random();
+                initialAction = randomGenerator.nextInt(Actions.numActions - 1);
 
+                //take action
+                takeAction(initialAction);
 
-
-            turnRadarRight(360);
-
-            //int nextAction;
-
-            //get state
-            state = getState(); //Q Learning: initializing, S curtState initial state
-            curtState = state;
-            //reward = 0;
-            action = qLearningAgent.policySelectAction(state); //Q learning: choose action based on policy,A curtAction
-            avoidWalls();
-            radarLockOnTarget();
-
-            //execute action
-            switch (action) {
-
-                /**
-                 *  The setXXX() methods tells Robocode
-                 *  that this in an "asynchroneous" action. The other
-                 *  methods like turnRadarLeft(360).
-                 *  Will execute the command, and wait for it to finish.
-                 */
-               /* case Actions.robotSpiral:
-                    System.out.println("take Action: spiral ");
-                    action_spiral();
-                    break;
-
-                case Actions.robotTrack:
-                    System.out.println("take Action:advance ");
-                    action_advance();
-                    break;*/
-
-                /*case Actions.robotTrack1:
-                    System.out.println("take Action: advance1 ");
-                    action_advance1();
-                    break;
-
-                case Actions.robotRetreat:
-                    System.out.println("take Action: retreat");
-                    action_retreat();
-                    break;*/
-
-                case Actions.robotAhead:
-                   // radarLockOnTarget();
-                    System.out.println("take Action: ahead ");
-                    setAhead(Actions.RobotMoveDistance);
-                    //myFire();
-                    movingForward = true;
-
-                    break;
-
-                case Actions.robotBack:
-                   // radarLockOnTarget();
-                    System.out.println("take Action: back ");
-                    setBack(Actions.RobotMoveDistance);
-                    //myFire();
-                    movingForward = false;
-                    break;
-
-               case Actions.robotTurnLeft:
-                   // radarLockOnTarget();
-                    System.out.println("take Action: turn left ");
-                    setTurnLeft(Actions.RobotTurnDegree);
-                    //setAhead(Actions.RobotMoveDistance);
-                    //ahead(Actions.RobotMoveDistance);
-                    //myFire();
-                    break;
-
-                case Actions.robotTurnRight:
-                    radarLockOnTarget();
-                    System.out.println("take Action: turn right ");
-                    setTurnRight(Actions.RobotTurnDegree);
-                    //setAhead(Actions.RobotMoveDistance);
-                    //ahead(Actions.RobotMoveDistance);
-                    //myFire();
-                    break;
-
-                case Actions.robotSpin:
-                    radarLockOnTarget();
-                    System.out.println("take Action: spin ");
-                    setTurnRight(target.getTargetBearing()+Actions.RobotTurnDegree_L);
-                    setAhead(Actions.RobotMoveDistance_L);
-
-              /*  case Actions.robotAhead_L:
-                    // radarLockOnTarget();
-                    System.out.println("take Action: ahead L");
-                    setAhead(Actions.RobotMoveDistance_L);
-
-                    myFire();
-                    movingForward = true;
-
-                    break;
-
-                case Actions.robotBack_L:
-                    // radarLockOnTarget();
-                    System.out.println("take Action: back L ");
-                    setBack(Actions.RobotMoveDistance_L);
-
-                    myFire();
-                    movingForward = false;
-                   //System.out.println("take Action: back L ");
-                    break;
-
-                case Actions.robotTurnLeft_L:
-                    // radarLockOnTarget();
-                    System.out.println("take Action: turn left L ");
-                    setTurnLeft(target.getTargetBearing()+Actions.RobotTurnDegree_L);
-                    ahead(Actions.RobotMoveDistance_L);
-
-                    myFire();
-                    break;
-
-                case Actions.robotTurnRight_L:
-                    // radarLockOnTarget();
-                    System.out.println("take Action: turn right L");
-                    setTurnRight(target.getTargetBearing()+Actions.RobotTurnDegree_L);
-                    ahead(Actions.RobotMoveDistance_L);
-                    System.out.println("take Action: turn right L");
-                    myFire();
-                    break;*/
-
-               /* case Actions.rotate1:
-                    System.out.println("take Action: rotate 1");
-                    setTurnRight(target.getTargetBearing()+Actions.RobotTurnDegree_L);
-                    ahead(target.getTargetDistance());
+                crtState = initialState;
+                crtAction = initialAction;
 
 
-                */
+            }else {
+                //get S'
+                nextState = getState();
+
+                //off-policy or on-policy
+                if(offPolicy) { //Q learning
+                    qLearningAgent.Q_Learning(crtState,crtAction,nextState,reward);
+                }
+                else { //Sarsa
+                    nextAction = qLearningAgent.policySelectAction(nextState);
+                    qLearningAgent.Sarsa(crtState,crtAction,nextState,nextAction,reward);
+                }
+
+                crtState = nextState; //S <- S'
+                reward = 0.0d;
 
 
-                /*case Actions.robotFire:
-                    System.out.println("take Action: Fire! ");
-                    //radarLockOnTarget();
-                    myFire();
-                    break;*/
 
 
-                default: // cause robot doesn't move at all!
-                    System.out.println("Action Not Found");
-                    break;
-
-            }
-            //to avoid delay rewards for firing.
-
-            execute();
-            System.out.println("Action ends");
-            //avoidWalls();
-
-            turnRadarRight(360);
-
-
-            //double laterDistance2enemy = target.getTargetDistance();
-
-            //set on-policy or off-policy
-
-            //Q_learning: off-policy
-
-            //curtState = state;
-            curtAction = action;
-            int nextState = getState(); //get S'
-            if(offPolicy) {
-                qLearningAgent.Q_Learning(curtState, curtAction,nextState,reward); //update q value:   S, best action
-            }
-            else {// on policy: Sarsa
-                int nextAction = qLearningAgent.policySelectAction(nextState);
-                qLearningAgent.Sarsa(curtState,curtAction,nextState,nextAction,reward);
             }
 
 
 
 
-            curtState = nextState;
 
-            //update states
 
-            //Sarsa: on-policy
-            //qLearningAgent.Sarsa(state,action,reward);
+
+
+
+
 
             accumReward += reward;// get reward
             accumRewardArr[(getRoundNum())] = accumReward;
@@ -509,16 +373,7 @@ public class TanRobo  extends AdvancedRobot implements IBasicEvents, IBasicEvent
         reward += rewardForDeath;
         saveData();
 
-        curtState = state;
-        curtAction = action;
-        int nextState = getState(); //get S'
-        if(offPolicy) {
-            qLearningAgent.Q_Learning(curtState, curtAction,nextState,reward); //update q value:   S, best action
-        }
-        else {// on policy: Sarsa
-            int nextAction = qLearningAgent.policySelectAction(nextState);
-            qLearningAgent.Sarsa(curtState,curtAction,nextState,nextAction,reward);
-        }
+
 
     }
 
@@ -612,16 +467,6 @@ public class TanRobo  extends AdvancedRobot implements IBasicEvents, IBasicEvent
 
         if (interReward) reward += 50;
 
-        curtState = state;
-        curtAction = action;
-        int nextState = getState(); //get S'
-        if(offPolicy) {
-            qLearningAgent.Q_Learning(curtState, curtAction,nextState,reward); //update q value:   S, best action
-        }
-        else {// on policy: Sarsa
-            int nextAction = qLearningAgent.policySelectAction(nextState);
-            qLearningAgent.Sarsa(curtState,curtAction,nextState,nextAction,reward);
-        }
 
     }
 
@@ -633,16 +478,7 @@ public class TanRobo  extends AdvancedRobot implements IBasicEvents, IBasicEvent
 
 
         reward += rewardForWin;
-        curtState = state;
-        curtAction = action;
-        int nextState = getState(); //get S'
-        if(offPolicy) {
-            qLearningAgent.Q_Learning(curtState, curtAction,nextState,reward); //update q value:   S, best action
-        }
-        else {// on policy: Sarsa
-            int nextAction = qLearningAgent.policySelectAction(nextState);
-            qLearningAgent.Sarsa(curtState,curtAction,nextState,nextAction,reward);
-        }
+
         saveData();
        // int winningTag = 1;
 
@@ -1195,6 +1031,144 @@ public class TanRobo  extends AdvancedRobot implements IBasicEvents, IBasicEvent
         if (ang < -PI)
             ang += 2*PI;
         return ang;
+    }
+
+
+    private void takeAction (int action) {
+
+        //execute action
+        switch (action) {
+
+            /**
+             *  The setXXX() methods tells Robocode
+             *  that this in an "asynchroneous" action. The other
+             *  methods like turnRadarLeft(360).
+             *  Will execute the command, and wait for it to finish.
+             */
+               /* case Actions.robotSpiral:
+                    System.out.println("take Action: spiral ");
+                    action_spiral();
+                    break;
+
+                case Actions.robotTrack:
+                    System.out.println("take Action:advance ");
+                    action_advance();
+                    break;*/
+
+                /*case Actions.robotTrack1:
+                    System.out.println("take Action: advance1 ");
+                    action_advance1();
+                    break;
+
+                case Actions.robotRetreat:
+                    System.out.println("take Action: retreat");
+                    action_retreat();
+                    break;*/
+
+            case Actions.robotAhead:
+                // radarLockOnTarget();
+                System.out.println("take Action: ahead ");
+                setAhead(Actions.RobotMoveDistance);
+                //myFire();
+                movingForward = true;
+
+                break;
+
+            case Actions.robotBack:
+                // radarLockOnTarget();
+                System.out.println("take Action: back ");
+                setBack(Actions.RobotMoveDistance);
+                //myFire();
+                movingForward = false;
+                break;
+
+            case Actions.robotTurnLeft:
+                // radarLockOnTarget();
+                System.out.println("take Action: turn left ");
+                setTurnLeft(Actions.RobotTurnDegree);
+                //setAhead(Actions.RobotMoveDistance);
+                //ahead(Actions.RobotMoveDistance);
+                //myFire();
+                break;
+
+            case Actions.robotTurnRight:
+                radarLockOnTarget();
+                System.out.println("take Action: turn right ");
+                setTurnRight(Actions.RobotTurnDegree);
+                //setAhead(Actions.RobotMoveDistance);
+                //ahead(Actions.RobotMoveDistance);
+                //myFire();
+                break;
+
+            case Actions.robotSpin:
+                radarLockOnTarget();
+                System.out.println("take Action: spin ");
+                setTurnRight(target.getTargetBearing()+Actions.RobotTurnDegree_L);
+                setAhead(Actions.RobotMoveDistance_L);
+
+              /*  case Actions.robotAhead_L:
+                    // radarLockOnTarget();
+                    System.out.println("take Action: ahead L");
+                    setAhead(Actions.RobotMoveDistance_L);
+
+                    myFire();
+                    movingForward = true;
+
+                    break;
+
+                case Actions.robotBack_L:
+                    // radarLockOnTarget();
+                    System.out.println("take Action: back L ");
+                    setBack(Actions.RobotMoveDistance_L);
+
+                    myFire();
+                    movingForward = false;
+                   //System.out.println("take Action: back L ");
+                    break;
+
+                case Actions.robotTurnLeft_L:
+                    // radarLockOnTarget();
+                    System.out.println("take Action: turn left L ");
+                    setTurnLeft(target.getTargetBearing()+Actions.RobotTurnDegree_L);
+                    ahead(Actions.RobotMoveDistance_L);
+
+                    myFire();
+                    break;
+
+                case Actions.robotTurnRight_L:
+                    // radarLockOnTarget();
+                    System.out.println("take Action: turn right L");
+                    setTurnRight(target.getTargetBearing()+Actions.RobotTurnDegree_L);
+                    ahead(Actions.RobotMoveDistance_L);
+                    System.out.println("take Action: turn right L");
+                    myFire();
+                    break;*/
+
+               /* case Actions.rotate1:
+                    System.out.println("take Action: rotate 1");
+                    setTurnRight(target.getTargetBearing()+Actions.RobotTurnDegree_L);
+                    ahead(target.getTargetDistance());
+
+
+                */
+
+
+                /*case Actions.robotFire:
+                    System.out.println("take Action: Fire! ");
+                    //radarLockOnTarget();
+                    myFire();
+                    break;*/
+
+
+            default: // cause robot doesn't move at all!
+                System.out.println("Action Not Found");
+                break;
+
+        }
+        //to avoid delay rewards for firing.
+
+        execute();
+        System.out.println("Action ends");
     }
 
 }
