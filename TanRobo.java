@@ -63,14 +63,11 @@ public class TanRobo  extends AdvancedRobot implements IBasicEvents, IBasicEvent
     private int nextState;
     private int nextAction;
 
-    private int state;
-    private int action;
 
     private boolean offPolicy = true;
 
     private boolean foundTarget = false;
-    private int ifHitWall = 0;
-    private int ifHitByBullet = 0;
+
 
     //rewards
     private double accumReward = 0.0;
@@ -79,8 +76,8 @@ public class TanRobo  extends AdvancedRobot implements IBasicEvents, IBasicEvent
     private boolean interReward = true;
 
     private int moveDirection = 1;
-    //save stats
-    public static int numTotalGames = 0;
+
+
 
     //save win rate per 100 battle
     public static final String LOG_WINRATE = "./win_rate_per_hundredRound.csv";
@@ -97,8 +94,7 @@ public class TanRobo  extends AdvancedRobot implements IBasicEvents, IBasicEvent
     private static double[] accumRewardArr = new double[10000000];
 
     public void run() {
-       /* winRatesFile = getDataFile(LOG_WINRATE);
-        accumRewardFile = getDataFile(LOG_ACCUMREWARD);*/
+
 
         lut = new LUT();
         loadData();
@@ -112,6 +108,7 @@ public class TanRobo  extends AdvancedRobot implements IBasicEvents, IBasicEvent
         // every parts of the robot moves freely from the others
         setAdjustGunForRobotTurn(true);
         setAdjustRadarForGunTurn(true);
+        //turnRadarRight(360);
         execute();
 
         winRatesFile = getDataFile(LOG_WINRATE);
@@ -122,6 +119,9 @@ public class TanRobo  extends AdvancedRobot implements IBasicEvents, IBasicEvent
         //After initializing Q table, enter the Loop for each episode until terminal state
 
         while (true) {
+
+            turnRadarRight(360);
+            radarLockOnTarget();
             //gradually change epsilon
             //int crtRoundNum = getRoundNum();
             if(ifEpsilonDecrease)
@@ -162,37 +162,13 @@ public class TanRobo  extends AdvancedRobot implements IBasicEvents, IBasicEvent
                 }
 
                 crtState = nextState; //S <- S'
+
+                accumReward += reward;// get reward
+                accumRewardArr[(getRoundNum())] = accumReward;
                 reward = 0.0d;
-
-
-
-
             }
 
-
-
-
-
-
-
-
-
-
-
-            accumReward += reward;// get reward
-            accumRewardArr[(getRoundNum())] = accumReward;
-
-            //Reset Values
-
-            reward = 0.0d;
-
-            ifHitWall = 0;
-            ifHitByBullet = 0;
-
-
-
         }
-
 
     }
 
@@ -383,7 +359,7 @@ public class TanRobo  extends AdvancedRobot implements IBasicEvents, IBasicEvent
         double change = -power;
         //System.out.println("Hit By Bullet: " + change);
         if (interReward) reward += change;
-        ifHitByBullet = 1;
+
 
     }
 
@@ -402,7 +378,7 @@ public class TanRobo  extends AdvancedRobot implements IBasicEvents, IBasicEvent
         double change = -1.0;
        // System.out.println("Hit Wall: " + change);
         if (interReward) reward += change;
-        ifHitWall = 1;
+
     }
 
     @Override
@@ -1066,7 +1042,7 @@ public class TanRobo  extends AdvancedRobot implements IBasicEvents, IBasicEvent
                     break;*/
 
             case Actions.robotAhead:
-                // radarLockOnTarget();
+                radarLockOnTarget();
                 System.out.println("take Action: ahead ");
                 setAhead(Actions.RobotMoveDistance);
                 //myFire();
@@ -1075,7 +1051,7 @@ public class TanRobo  extends AdvancedRobot implements IBasicEvents, IBasicEvent
                 break;
 
             case Actions.robotBack:
-                // radarLockOnTarget();
+                radarLockOnTarget();
                 System.out.println("take Action: back ");
                 setBack(Actions.RobotMoveDistance);
                 //myFire();
@@ -1083,7 +1059,7 @@ public class TanRobo  extends AdvancedRobot implements IBasicEvents, IBasicEvent
                 break;
 
             case Actions.robotTurnLeft:
-                // radarLockOnTarget();
+                radarLockOnTarget();
                 System.out.println("take Action: turn left ");
                 setTurnLeft(Actions.RobotTurnDegree);
                 //setAhead(Actions.RobotMoveDistance);
