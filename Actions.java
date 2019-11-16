@@ -30,7 +30,7 @@ public class Actions {
     public static final int robotTurnRight_L = 8;*/
 
 
-    public static final int numActions =5;
+    public static final int numActions =6;
 
     public static final double RobotMoveDistance = 100.0;
     public static final double RobotTurnDegree =  90.0;

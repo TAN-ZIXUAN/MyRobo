@@ -34,23 +34,16 @@ public class TanRobo  extends AdvancedRobot implements IBasicEvents, IBasicEvent
 
     private boolean ifEpsilonDecrease = false;
 
-    // The coordinates of the last scanned robot
+
     private RobotStatus robotStatus;
 
-
+    //coordinates of enemy
     int scannedX = Integer.MIN_VALUE;
     int scannedY = Integer.MIN_VALUE;
 
     private double reward = 0.0;
 
     private boolean movingForward; // is true when setAhead is called, set to false on setbBack
-    //private boolean inWall; // is true when robot is near the wall
-    //for circling around the enemy
-    /*private double absBearing;
-    private double lastVel; //last velocity
-    private double gunTurnAmt; //amount to turn the gun*/
-
-    //boolean inWall; //is true when robot is near the wall
 
     private boolean ifFirstRun = true;
 
@@ -86,7 +79,6 @@ public class TanRobo  extends AdvancedRobot implements IBasicEvents, IBasicEvent
     private File winRatesFile_per10;
     private static int[] winRateArr = new int[100000];
     private static int[] winRateArr_per10 = new int[1000000];
-    //private int countB = 0;
 
     //save accumReward per round
     public static final String LOG_ACCUMREWARD = "./accumReward_per_round.csv";
@@ -108,7 +100,7 @@ public class TanRobo  extends AdvancedRobot implements IBasicEvents, IBasicEvent
         // every parts of the robot moves freely from the others
         setAdjustGunForRobotTurn(true);
         setAdjustRadarForGunTurn(true);
-        //turnRadarRight(360);
+        turnRadarRight(360);
         execute();
 
         winRatesFile = getDataFile(LOG_WINRATE);
@@ -121,7 +113,9 @@ public class TanRobo  extends AdvancedRobot implements IBasicEvents, IBasicEvent
         while (true) {
 
             turnRadarRight(360);
-            radarLockOnTarget();
+            //radarLockOnTarget();
+
+
             //gradually change epsilon
             //int crtRoundNum = getRoundNum();
             if(ifEpsilonDecrease)
@@ -132,6 +126,8 @@ public class TanRobo  extends AdvancedRobot implements IBasicEvents, IBasicEvent
                 QLearning.epsilon = 0.9 - count/10.0 ; //round as 0.0
             }
 
+
+            //start
             if(ifFirstRun) {
 
                 //initial state
@@ -161,10 +157,12 @@ public class TanRobo  extends AdvancedRobot implements IBasicEvents, IBasicEvent
                     qLearningAgent.Sarsa(crtState,crtAction,nextState,nextAction,reward);
                 }
 
+                //saveData();
                 crtState = nextState; //S <- S'
 
                 accumReward += reward;// get reward
                 accumRewardArr[(getRoundNum())] = accumReward;
+
                 reward = 0.0d;
             }
 
@@ -172,7 +170,7 @@ public class TanRobo  extends AdvancedRobot implements IBasicEvents, IBasicEvent
 
     }
 
-    //actions
+    //methods for actions
     public void action_spiral() {
         avoidWalls();
 
@@ -337,8 +335,9 @@ public class TanRobo  extends AdvancedRobot implements IBasicEvents, IBasicEvent
        // System.out.println("Bullet Missed: " + change);
         if (interReward) reward += change;
 
-        //but I need to track the bullet after the fire. avoiding delay rewards for firing
+
        //if we set negative reward to this, it might cause the robot to avoid firing
+        // but I need to track the bullet after the fire. avoiding delay rewards for firing
 
     }
 
@@ -357,7 +356,6 @@ public class TanRobo  extends AdvancedRobot implements IBasicEvents, IBasicEvent
     public void onHitByBullet(HitByBulletEvent hitByBulletEvent) {
         double power = hitByBulletEvent.getBullet().getPower();
         double change = -power;
-        //System.out.println("Hit By Bullet: " + change);
         if (interReward) reward += change;
 
 
@@ -366,17 +364,13 @@ public class TanRobo  extends AdvancedRobot implements IBasicEvents, IBasicEvent
     //This method is called when your robot collides with another robot.
     @Override
     public void onHitRobot(HitRobotEvent hitRobotEvent) {
-        /*double change = -6.0;
-        System.out.println("Hit Robot: " + change);
-        if (interReward) reward += change;*/
+       //will gain bonus but damage as well
     }
 
     @Override
     public void onHitWall(HitWallEvent hitWallEvent) {
-        moveDirection = -moveDirection; // reverse direction upon hitting a wall
-
+        //moveDirection = -moveDirection; // reverse direction upon hitting a wall
         double change = -1.0;
-       // System.out.println("Hit Wall: " + change);
         if (interReward) reward += change;
 
     }
@@ -384,14 +378,6 @@ public class TanRobo  extends AdvancedRobot implements IBasicEvents, IBasicEvent
     @Override
     public void onScannedRobot(ScannedRobotEvent scannedRobotEvent) {
         foundTarget = true;
-
-
-
-        //absBearing = scannedRobotEvent.getBearingRadians() + getHeadingRadians();
-
-        //get state: distance between robot and target
-        //distance2target = scannedRobotEvent.getDistance();
-        //seg4Distance = States.distanceAfterSeg(distance2target);
 
         target.setTargetBearing(scannedRobotEvent.getBearing());
         target.setTargetBearingRadians(scannedRobotEvent.getBearingRadians());
@@ -412,11 +398,11 @@ public class TanRobo  extends AdvancedRobot implements IBasicEvents, IBasicEvent
 
 
 
-        radarLockOnTarget();
+        //radarLockOnTarget();
         //avoidWalls();
 
-        // my robot is strong with it even before learning
-        double absBearing = getHeading() + target.getTargetBearing();
+        // my robot is too strong with it even before learning
+/*        double absBearing = getHeading() + target.getTargetBearing();
         double bearingFromGun = normalRelativeAngleDegrees(absBearing - getGunHeading());
         if (getGunHeat() == 0 && getEnergy() > .2&&Math.abs(getGunTurnRemaining()) < 10) {
             double firePower = Math.min(4.5 - Math.abs(bearingFromGun) / 2 - target.getTargetDistance() / 250, getEnergy() - .1);
@@ -428,7 +414,7 @@ public class TanRobo  extends AdvancedRobot implements IBasicEvents, IBasicEvent
                 setBulletColor(Color.red);
 
             fire(firePower);
-        }
+        }*/
 
 
 
@@ -439,8 +425,6 @@ public class TanRobo  extends AdvancedRobot implements IBasicEvents, IBasicEvent
     @Override
     public void onRobotDeath(RobotDeathEvent robotDeathEvent) {
         target.setTargetDistance(10000);
-        //numTotalGames++;
-
         if (interReward) reward += 50;
 
 
@@ -677,83 +661,6 @@ public class TanRobo  extends AdvancedRobot implements IBasicEvents, IBasicEvent
     // when a key has been typed (pressed and released).
     @Override
     public void onKeyTyped(KeyEvent keyEvent) {
-       /* switch (keyEvent.getKeyCode()) {
-            //Typed 0-9: set exploration rate to 0-0.9
-            case KeyEvent.VK_0:
-
-                QLearning.setEpsilon(0.0);
-                System.out.println("set exploration rate to 0.0");
-                break;
-
-            case KeyEvent.VK_1:
-                QLearning.setEpsilon(0.1);
-                System.out.println("set exploration rate to 0.1");
-                break;
-
-            case KeyEvent.VK_2:
-                QLearning.setEpsilon(0.2);
-                System.out.println("set exploration rate to 0.2");
-                break;
-
-            case KeyEvent.VK_3:
-                QLearning.setEpsilon(0.3);
-                System.out.println("set exploration rate to 0.3");
-                break;
-
-            case KeyEvent.VK_4:
-                QLearning.setEpsilon(0.4);
-                System.out.println("set exploration rate to 0.4");
-                break;
-
-            case KeyEvent.VK_5:
-                QLearning.setEpsilon(0.5);
-                System.out.println("set exploration rate to 0.5");
-                break;
-
-            case KeyEvent.VK_6:
-                QLearning.setEpsilon(0.6);
-                System.out.println("set exploration rate to 0.6");
-                break;
-
-            case KeyEvent.VK_7:
-                QLearning.setEpsilon(0.7);
-                System.out.println("set exploration rate to 0.7");
-                break;
-
-            case KeyEvent.VK_8:
-                QLearning.setEpsilon(0.8);
-                System.out.println("set exploration rate to 0.8");
-                break;
-
-            case KeyEvent.VK_9:
-                QLearning.setEpsilon(0.9);
-                System.out.println("set exploration rate to 0.9");
-                break;
-
-           //type O turn on InterReward(default)
-            case KeyEvent.VK_O:
-                interReward = true;
-                System.out.println("turn on InterReward");
-                break;
-
-           //type F turn off InterReward
-            case KeyEvent.VK_F:
-                interReward = false;
-                System.out.println("turn off InterReward");
-                break;
-
-            default:
-                QLearning.setEpsilon(0.9);
-                interReward = true;
-
-                System.out.println("[default setting] exploration rate: 0.9\n");
-                System.out.println("[default setting] interReward on\n");
-                System.out.println("Please press 0-9 set exploration rate to 0-0.9\n");
-                System.out.println("Please press O  to turn on interReward\n");
-                System.out.println("Please press F  to turn off interReward\n");
-                break;
-
-        }*/
 
 
     }
@@ -826,14 +733,8 @@ public class TanRobo  extends AdvancedRobot implements IBasicEvents, IBasicEvent
 
     @Override
     public void onBattleEnded(BattleEndedEvent battleEndedEvent) {
-       /* int roundNum = getRoundNum();
-        int per100Battle = roundNum%100*/
-       //win rates per 100 round
-        System.out.println("end !!!!!!!!!!!!!!!end!!!!!!!!!!!!1");
-        /*saveStats_win(winRatesFile,getRoundNum(),winRateArr);
-        saveStats_accumAward(accumRewardFile,getRoundNum(),accumRewardArr);*/
-       /* saveStats_win(getRoundNum(),winRateArr);
-        saveStats_accumAward(getRoundNum(),accumRewardArr);*/
+        System.out.println("end !!!!!!!!!!!!!!!end!!!!!!!!!!!!end!!!!!!!!!!!!!!!!");
+        saveData();
         saveStats_win_perHundred(winRatesFile);
         saveStats_win_per10(winRatesFile_per10);
         saveStats_award(accumRewardFile);
@@ -1042,7 +943,7 @@ public class TanRobo  extends AdvancedRobot implements IBasicEvents, IBasicEvent
                     break;*/
 
             case Actions.robotAhead:
-                radarLockOnTarget();
+                //radarLockOnTarget();
                 System.out.println("take Action: ahead ");
                 setAhead(Actions.RobotMoveDistance);
                 //myFire();
@@ -1051,7 +952,7 @@ public class TanRobo  extends AdvancedRobot implements IBasicEvents, IBasicEvent
                 break;
 
             case Actions.robotBack:
-                radarLockOnTarget();
+                //radarLockOnTarget();
                 System.out.println("take Action: back ");
                 setBack(Actions.RobotMoveDistance);
                 //myFire();
@@ -1059,7 +960,7 @@ public class TanRobo  extends AdvancedRobot implements IBasicEvents, IBasicEvent
                 break;
 
             case Actions.robotTurnLeft:
-                radarLockOnTarget();
+                //radarLockOnTarget();
                 System.out.println("take Action: turn left ");
                 setTurnLeft(Actions.RobotTurnDegree);
                 //setAhead(Actions.RobotMoveDistance);
@@ -1068,7 +969,7 @@ public class TanRobo  extends AdvancedRobot implements IBasicEvents, IBasicEvent
                 break;
 
             case Actions.robotTurnRight:
-                radarLockOnTarget();
+                //radarLockOnTarget();
                 System.out.println("take Action: turn right ");
                 setTurnRight(Actions.RobotTurnDegree);
                 //setAhead(Actions.RobotMoveDistance);
@@ -1077,10 +978,17 @@ public class TanRobo  extends AdvancedRobot implements IBasicEvents, IBasicEvent
                 break;
 
             case Actions.robotSpin:
-                radarLockOnTarget();
+                //radarLockOnTarget();
                 System.out.println("take Action: spin ");
                 setTurnRight(target.getTargetBearing()+Actions.RobotTurnDegree_L);
                 setAhead(Actions.RobotMoveDistance_L);
+
+
+            case Actions.robotFire:
+                System.out.println("take Action: Fire! ");
+                radarLockOnTarget();
+                myFire();
+                break;
 
               /*  case Actions.robotAhead_L:
                     // radarLockOnTarget();
@@ -1129,11 +1037,6 @@ public class TanRobo  extends AdvancedRobot implements IBasicEvents, IBasicEvent
                 */
 
 
-                /*case Actions.robotFire:
-                    System.out.println("take Action: Fire! ");
-                    //radarLockOnTarget();
-                    myFire();
-                    break;*/
 
 
             default: // cause robot doesn't move at all!
