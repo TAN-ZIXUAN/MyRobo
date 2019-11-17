@@ -1,9 +1,9 @@
 package MyRobo;
 
-import javax.swing.plaf.metal.MetalTheme;
-
 public class States {
     public static final int SegDistance2target = 3;    //3 segmentation close:d<=200, medium:200<d<=400, far:d>400
+
+    private static double PI = Math.PI;
     // private int distanceAfterSeg;
 
    // public static final int SegEnergy = 4;
@@ -107,11 +107,11 @@ public class States {
 
     public static int absBearingRadiansAfterSeg(double absBearingRadians) {
         int index;
-        if(absBearingRadians >0 && absBearingRadians<= 90)
+        if(absBearingRadians >0 && absBearingRadians<= 0.5*PI)
             index = 0;
-        else if(absBearingRadians<= 180)
+        else if(absBearingRadians<= PI)
             index = 1;
-        else if(absBearingRadians<=270)
+        else if(absBearingRadians<= 1.5*PI)
             index = 2;
         else
             index = 3;
