@@ -91,7 +91,7 @@ public class TanRobo  extends AdvancedRobot implements IBasicEvents, IBasicEvent
         lut = new LUT();
         loadData();
         qLearningAgent = new QLearning(lut);
-        target = new Target(0, 0,100000, 0, 0,0,0,0); //initializing target
+        target = new Target(0, 0, 100000, 0, 0, 0, 0, 0); //initializing target
 
         // set body colour
         robotColor();
@@ -106,18 +106,12 @@ public class TanRobo  extends AdvancedRobot implements IBasicEvents, IBasicEvent
         winRatesFile = getDataFile(LOG_WINRATE);
         winRatesFile_per10 = getDataFile(LOG_WINRATE_PER10);
         accumRewardFile = getDataFile(LOG_ACCUMREWARD);
+        accumRewardFile = getDataFile(LOG_ACCUMREWARD);
 
 
         //After initializing Q table, enter the Loop for each episode until terminal state
 
         while (true) {
-
-            turnRadarRight(360);
-            //radarLockOnTarget();
-
-
-            //gradually change epsilon
-            //int crtRoundNum = getRoundNum();
             if(ifEpsilonDecrease)
             {
                 int changePerNRounds = 1000;
@@ -167,7 +161,6 @@ public class TanRobo  extends AdvancedRobot implements IBasicEvents, IBasicEvent
             }
 
         }
-
     }
 
     //methods for actions
@@ -418,6 +411,16 @@ public class TanRobo  extends AdvancedRobot implements IBasicEvents, IBasicEvent
 
 
 
+        turnRadarRight(360);
+        //radarLockOnTarget();
+
+
+        //gradually change epsilon
+        //int crtRoundNum = getRoundNum();
+
+
+
+
 
     }
 
@@ -434,7 +437,7 @@ public class TanRobo  extends AdvancedRobot implements IBasicEvents, IBasicEvent
     public void onWin(WinEvent winEvent) {
         System.out.println("Win!!!");
         winRateArr[(getRoundNum() - 1) / 100]++;
-        winRateArr_per10[(getRoundNum() - 1) / 50]++;
+        winRateArr_per10[(getRoundNum() - 1) / 10]++;
 
 
         reward += rewardForWin;
