@@ -188,20 +188,30 @@ public class TanRobo  extends AdvancedRobot implements IBasicEvents, IBasicEvent
     }
 
     public void action_0 () {
-        setTurnRight(target.getTargetBearing());
+
+        setAhead(Actions.RobotMoveDistance);
+        System.out.println("Action END ");
+
+/*        setTurnRight(target.getTargetBearing());
         setAhead(100);
 
         if (getTime() % 100 == 0) {
             fire(1);
-        }
+        }*/
     }
 
     public void action_1 () {
-        myFire();
+        /*myFire();*/
+
+        setBack(Actions.RobotMoveDistance);
+        System.out.println("Action END ");
     }
 
     public void action_2 () {
-        // switch directions if we've stopped
+        setTurnLeft(Actions.RobotTurnDegree);
+        System.out.println("Action END ");
+
+       /* // switch directions if we've stopped
         if (getVelocity() == 0)
             moveDirection *= -1;
 
@@ -211,16 +221,29 @@ public class TanRobo  extends AdvancedRobot implements IBasicEvents, IBasicEvent
 
         if (getTime() % 100 == 0) {
             fire(1);
-        }
+        }*/
     }
 
     public void action_3 () {
-        setTurnRight(target.getTargetBearing() - 10);
+        setTurnRight(Actions.RobotTurnDegree);
+        System.out.println("Action END ");
+        /*setTurnRight(target.getTargetBearing() - 10);
         setAhead(-100);
 
         if (getTime() % 100 == 0) {
             fire(1);
-        }
+        }*/
+    }
+
+    public void action_4 () {
+       myFire();
+        System.out.println("Action END ");
+        /*setTurnRight(target.getTargetBearing() - 10);
+        setAhead(-100);
+
+        if (getTime() % 100 == 0) {
+            fire(1);
+        }*/
     }
 
     //methods for actions
@@ -1028,6 +1051,17 @@ public class TanRobo  extends AdvancedRobot implements IBasicEvents, IBasicEvent
                 //radarLockOnTarget();
                 System.out.println("take Action 3 ");
                 action_3();
+                //setTurnRight(Actions.RobotTurnDegree);
+                //setAhead(Actions.RobotMoveDistance);
+                //ahead(Actions.RobotMoveDistance);
+                //myFire();
+                break;
+
+
+            case Actions.action_4:
+                //radarLockOnTarget();
+                System.out.println("take Action 4 ");
+                action_4();
                 //setTurnRight(Actions.RobotTurnDegree);
                 //setAhead(Actions.RobotMoveDistance);
                 //ahead(Actions.RobotMoveDistance);

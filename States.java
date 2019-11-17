@@ -18,7 +18,7 @@ public class States {
 
     //4 segmentation 0:e<=10, 1:10<e<=25, 2:25<e<=45, 3:e>45
     //but I already consider energy problem in fire so maybe I don't need this case.
-    private static final int SegEenergy = 3;
+    private static final int SegEnergy = 3;
 
 
 
@@ -37,10 +37,10 @@ public class States {
 
 
     static {
-        Mapping = new int[SegDistance2target][SegEenergy][SegGunHeat];
+        Mapping = new int[SegDistance2target][SegEnergy][SegGunHeat];
         int count = 0;
         for (int a = 0; a < SegDistance2target; a++)
-            for (int b = 0; b < SegEenergy; b++)
+            for (int b = 0; b < SegEnergy; b++)
                 for (int c = 0; c < SegGunHeat; c++)
                     Mapping[a][b][c]= count++;
 
