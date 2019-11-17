@@ -534,6 +534,7 @@ public class TanRobo  extends AdvancedRobot implements IBasicEvents, IBasicEvent
             // The close the enmy robot, the bigger the bullet.
             // The more precisely aimed, the bigger the bullet.
             // Don't fire us into disability, always save .1
+        radarLockOnTarget();
         double absBearing = getHeading() + target.getTargetBearing();
         double bearingFromGun = normalRelativeAngleDegrees(absBearing - getGunHeading());
         if (getEnergy() > .2&&Math.abs(getGunTurnRemaining()) < 10) {
