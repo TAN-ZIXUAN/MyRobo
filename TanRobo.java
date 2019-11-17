@@ -998,7 +998,8 @@ public class TanRobo  extends AdvancedRobot implements IBasicEvents, IBasicEvent
             case Actions.action_0:
                 //radarLockOnTarget();
                 System.out.println("take Action 0 ");
-                setAhead(Actions.RobotMoveDistance);
+                //setAhead(Actions.RobotMoveDistance);
+                action_0();
                 //myFire();
                 movingForward = true;
 
@@ -1007,7 +1008,8 @@ public class TanRobo  extends AdvancedRobot implements IBasicEvents, IBasicEvent
             case Actions.action_1:
                 //radarLockOnTarget();
                 System.out.println("take Action 1 ");
-                setBack(Actions.RobotMoveDistance);
+                //setBack(Actions.RobotMoveDistance);
+                action_1();
                 //myFire();
                 movingForward = false;
                 break;
@@ -1015,7 +1017,8 @@ public class TanRobo  extends AdvancedRobot implements IBasicEvents, IBasicEvent
             case Actions.action_2:
                 //radarLockOnTarget();
                 System.out.println("take Action 2 ");
-                setTurnLeft(Actions.RobotTurnDegree);
+                action_2();
+                //setTurnLeft(Actions.RobotTurnDegree);
                 //setAhead(Actions.RobotMoveDistance);
                 //ahead(Actions.RobotMoveDistance);
                 //myFire();
@@ -1024,7 +1027,8 @@ public class TanRobo  extends AdvancedRobot implements IBasicEvents, IBasicEvent
             case Actions.action_3:
                 //radarLockOnTarget();
                 System.out.println("take Action 3 ");
-                setTurnRight(Actions.RobotTurnDegree);
+                action_3();
+                //setTurnRight(Actions.RobotTurnDegree);
                 //setAhead(Actions.RobotMoveDistance);
                 //ahead(Actions.RobotMoveDistance);
                 //myFire();
