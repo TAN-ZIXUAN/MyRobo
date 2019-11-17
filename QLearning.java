@@ -19,26 +19,26 @@ public class QLearning {
     }
 
     //Q-learning Algorithm
-    public void Q_Learning(int curtState, int curtAction, int nextState, double reward) {
+    public void Q_Learning(int prevState, int prevAction, int crtState, double reward) {
         double QValue;
         double newQValue;
 
-            QValue = lut.getQValue(curtState, curtAction);
-            newQValue = QValue + alpha * (reward + gamma * lut.getMaxQValue(nextState) - QValue);
-            lut.setQValue(curtState, curtAction, newQValue); //update LUT Q value
+        QValue = lut.getQValue(prevState, prevAction);
+        newQValue = QValue + alpha * (reward + gamma * lut.getMaxQValue(crtState) - QValue);
+        lut.setQValue(prevState, prevAction, newQValue); //update LUT Q value
 
     }
 
     //on-policy learning
-    public void Sarsa( int curtState, int curtAction,int nextState, int nextAction, double reward) {
+    public void Sarsa( int prevState, int prevAction,int crtState, int crtAction, double reward) {
         double Q1;
         double Q2;
 
-            Q1 = lut.getQValue(curtState, curtAction);
-            Q2 = lut.getQValue(nextState,nextAction);
+            Q1 = lut.getQValue(prevState, prevAction);
+            Q2 = lut.getQValue(crtState,crtAction);
 
             double newQValue = Q1 + alpha*(reward + gamma *Q2 - Q1);
-            lut.setQValue(curtState, curtAction, newQValue);
+            lut.setQValue(prevState, prevAction, newQValue);
 
     }
 

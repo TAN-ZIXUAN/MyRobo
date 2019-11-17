@@ -28,9 +28,10 @@ import static robocode.util.Utils.normalRelativeAngleDegrees;
 public class TanRobo  extends AdvancedRobot implements IBasicEvents, IBasicEvents2, IInteractiveEvents {
 
     final double PI = Math.PI;
-    private LUT lut;
-    private QLearning qLearningAgent;
-    private Target target;
+    static States myStates = new States();
+    static LUT lut;
+    static QLearning qLearningAgent;
+    static Target target;
 
     private boolean ifEpsilonDecrease = false;
 
@@ -128,11 +129,13 @@ public class TanRobo  extends AdvancedRobot implements IBasicEvents, IBasicEvent
             }
 
 
+            myStates.updateStateAfterSeg(target.getTargetDistance(),getEnergy(),getGunHeat());
+
             //start
             if(ifFirstTurn) {
 
                 //initial state
-                prevState = getState();
+                prevState = myStates.getState_LUT();
 
                 //random action
                 Random randomGenerator = new Random();
@@ -146,7 +149,7 @@ public class TanRobo  extends AdvancedRobot implements IBasicEvents, IBasicEvent
 
             }else {
                 //get S'
-                crtState = getState();
+                crtState = myStates.getState_LUT();
 
                 //off-policy or on-policy
                 if(offPolicy) { //Q learning
