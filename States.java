@@ -18,7 +18,7 @@ public class States {
 
     //4 segmentation 0:e<=10, 1:10<e<=25, 2:25<e<=45, 3:e>45
     //but I already consider energy problem in fire so maybe I don't need this case.
-    private static final int SegEenergy = 4;
+    private static final int SegEenergy = 3;
 
 
 
@@ -66,14 +66,12 @@ public class States {
     public static int energyAfterSeg(double actualEnergy) {
         int e;  //4 segmentation 0:e<=10, 1:10<e<=25, 2:25<e<=45, 3:e>45
 
-        if (actualEnergy <= 10)
+        if (actualEnergy <= 30)
             e = 0;
-        else if (actualEnergy <=25)
+        else if (actualEnergy <=60)
             e = 1;
-        else if (actualEnergy <= 45)
-            e = 2;
         else
-            e = 3;
+            e = 2;
 
         return e; //return the index for distance
     }
