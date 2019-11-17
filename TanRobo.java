@@ -159,18 +159,68 @@ public class TanRobo  extends AdvancedRobot implements IBasicEvents, IBasicEvent
 
                 //saveData();
                 prevState = crtState; //S <- S'
-                crtAction = qLearningAgent.policySelectAction(crtState);
-                prevAction = crtAction;
+                //crtAction = qLearningAgent.policySelectAction(crtState);
+                //prevAction = crtAction;
 
                 accumReward += reward;// get reward
                 accumRewardArr[(getRoundNum())] = accumReward;
 
                 reward = 0.0d;
-                takeAction(prevAction);
+
+                //take action
+                crtAction = qLearningAgent.policySelectAction(crtState);
+                if (interReward) {
+                    if (crtAction == Actions.action_1 && getGunHeat() != 0) {
+                        double change = -3;
+                        reward += change;
+                    }
+                }
+
+                takeAction(crtAction);
+                //crtAction = prevAction;
+
             }
+
+            setTurnRadarLeftRadians(getRadarTurnRemainingRadians());
 
         }
 
+    }
+
+    public void action_0 () {
+        setTurnRight(target.getTargetBearing());
+        setAhead(100);
+
+        if (getTime() % 100 == 0) {
+            fire(1);
+        }
+    }
+
+    public void action_1 () {
+        myFire();
+    }
+
+    public void action_2 () {
+        // switch directions if we've stopped
+        if (getVelocity() == 0)
+            moveDirection *= -1;
+
+        // circle our enemy
+        setTurnRight(target.getTargetBearing() + 90);
+        setAhead(100 * moveDirection);
+
+        if (getTime() % 100 == 0) {
+            fire(1);
+        }
+    }
+
+    public void action_3 () {
+        setTurnRight(target.getTargetBearing() - 10);
+        setAhead(-100);
+
+        if (getTime() % 100 == 0) {
+            fire(1);
+        }
     }
 
     //methods for actions
@@ -304,7 +354,9 @@ public class TanRobo  extends AdvancedRobot implements IBasicEvents, IBasicEvent
         int absBearingRadians_ = States.absBearingRadiansAfterSeg(target.getTargetHeadingRadians()+ target.getTargetBearingRadians());
        // int heading_ = States.headingAfterSeg(getHeading());
 
-        int state = States.getIndexForStates(distance_,absBearingRadians_, x_, y_);
+        int gunHeat_ = States.gunHeatAfterSeg(getGunHeat());
+
+        int state = States.getIndexForStates(distance_,absBearingRadians_, x_, y_,gunHeat_);
         return state;
 
     }
@@ -357,6 +409,7 @@ public class TanRobo  extends AdvancedRobot implements IBasicEvents, IBasicEvent
 
     @Override
     public void onHitByBullet(HitByBulletEvent hitByBulletEvent) {
+
         double power = hitByBulletEvent.getBullet().getPower();
         double change = -power;
         if (interReward) reward += change;
@@ -368,10 +421,12 @@ public class TanRobo  extends AdvancedRobot implements IBasicEvents, IBasicEvent
     @Override
     public void onHitRobot(HitRobotEvent hitRobotEvent) {
        //will gain bonus but damage as well
+        moveDirection *= -1;
     }
 
     @Override
     public void onHitWall(HitWallEvent hitWallEvent) {
+        moveDirection *= -1;
         //moveDirection = -moveDirection; // reverse direction upon hitting a wall
         double change = -1.0;
         if (interReward) reward += change;
@@ -471,12 +526,6 @@ public class TanRobo  extends AdvancedRobot implements IBasicEvents, IBasicEvent
 
     public void myFire() {
         //if robot hasn't found the target, turn the radar around for scanning
-        foundTarget = false;
-        while (!foundTarget) {
-            setTurnRadarLeft(360);
-            execute();
-        }
-
        // found target
             // We check gun heat here, because calling fire()
             // uses a turn, which could cause us to lose track
@@ -945,53 +994,41 @@ public class TanRobo  extends AdvancedRobot implements IBasicEvents, IBasicEvent
                     action_retreat();
                     break;*/
 
-            case Actions.robotAhead:
+            case Actions.action_0:
                 //radarLockOnTarget();
-                System.out.println("take Action: ahead ");
+                System.out.println("take Action 0 ");
                 setAhead(Actions.RobotMoveDistance);
                 //myFire();
                 movingForward = true;
 
                 break;
 
-            case Actions.robotBack:
+            case Actions.action_1:
                 //radarLockOnTarget();
-                System.out.println("take Action: back ");
+                System.out.println("take Action 1 ");
                 setBack(Actions.RobotMoveDistance);
                 //myFire();
                 movingForward = false;
                 break;
 
-            case Actions.robotTurnLeft:
+            case Actions.action_2:
                 //radarLockOnTarget();
-                System.out.println("take Action: turn left ");
+                System.out.println("take Action 2 ");
                 setTurnLeft(Actions.RobotTurnDegree);
                 //setAhead(Actions.RobotMoveDistance);
                 //ahead(Actions.RobotMoveDistance);
                 //myFire();
                 break;
 
-            case Actions.robotTurnRight:
+            case Actions.action_3:
                 //radarLockOnTarget();
-                System.out.println("take Action: turn right ");
+                System.out.println("take Action 3 ");
                 setTurnRight(Actions.RobotTurnDegree);
                 //setAhead(Actions.RobotMoveDistance);
                 //ahead(Actions.RobotMoveDistance);
                 //myFire();
                 break;
 
-            case Actions.robotSpin:
-                //radarLockOnTarget();
-                System.out.println("take Action: spin ");
-                setTurnRight(target.getTargetBearing()+Actions.RobotTurnDegree_L);
-                setAhead(Actions.RobotMoveDistance_L);
-
-
-            case Actions.robotFire:
-                System.out.println("take Action: Fire! ");
-                radarLockOnTarget();
-                myFire();
-                break;
 
               /*  case Actions.robotAhead_L:
                     // radarLockOnTarget();

@@ -14,6 +14,8 @@ public class States {
     public static final int SegX = 8;
     public static final int SegY = 6;
 
+    public static final int SegGunHeat = 2;
+
     //4 segmentation 0:e<=10, 1:10<e<=25, 2:25<e<=45, 3:e>45
     //but I already consider energy problem in fire so maybe I don't need this case.
     //  private int EnergyAfterSeg;
@@ -31,17 +33,18 @@ public class States {
     public static final int numStates;
 
 
-    private static final int Mapping[][][][];
+    private static final int Mapping[][][][][];
 
 
     static {
-        Mapping = new int[SegDistance2target][SegAbsBearingRadians][SegX][SegY];
+        Mapping = new int[SegDistance2target][SegAbsBearingRadians][SegX][SegY][SegGunHeat];
         int count = 0;
         for (int a = 0; a < SegDistance2target; a++)
             for (int b = 0; b < SegAbsBearingRadians; b++)
                 for (int e = 0; e < SegX; e++)
                     for (int f = 0; f < SegY; f++)
-                        Mapping[a][b][e][f]= count++;
+                        for (int g = 0; g < SegGunHeat; g++)
+                            Mapping[a][b][e][f][g]= count++;
 
 
 
@@ -161,6 +164,13 @@ public class States {
         return index;
     }
 
+    public static int gunHeatAfterSeg (double gunHeat) {
+        if(gunHeat > 0)
+            return 1;
+        else
+            return 0;
+    }
+
    /* public static int headingAfterSeg(double heading) {
         double unit = 360 / SegHeading;
         double newHeading = heading + unit / 2;
@@ -170,7 +180,7 @@ public class States {
         return (int)(newHeading / unit);
     }*/
 
-    public static int getIndexForStates(int distanceIndex,int absBearingRadiansIndex, int xIndex, int yIndex) {
-        return Mapping[distanceIndex][absBearingRadiansIndex][xIndex][yIndex];
+    public static int getIndexForStates(int distanceIndex,int absBearingRadiansIndex, int xIndex, int yIndex, int gunHeatIndex) {
+        return Mapping[distanceIndex][absBearingRadiansIndex][xIndex][yIndex][gunHeatIndex];
     }
 }

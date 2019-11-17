@@ -3,7 +3,7 @@ package MyRobo;
 import java.util.Random;
 
 public class QLearning {
-    public static double alpha = 0.7; //learning rate: alpha
+    public static double alpha = 0.5; //learning rate: alpha
     public static double gamma = 0.8; //discount rate: gamma fire has delay rewards
     public static double epsilon = 0.2; //epsilon-greedy: epsilon for exploration, 1-epsilon for exploitation
 /*    private int curtState;
