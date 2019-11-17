@@ -356,7 +356,7 @@ public class TanRobo  extends AdvancedRobot implements IBasicEvents, IBasicEvent
 
         int gunHeat_ = States.gunHeatAfterSeg(getGunHeat());
 
-        int state = States.getIndexForStates(distance_,absBearingRadians_, x_, y_,gunHeat_);
+        int state = States.getIndexForStates(distance_,energy_,gunHeat_);
         return state;
 
     }
@@ -534,7 +534,7 @@ public class TanRobo  extends AdvancedRobot implements IBasicEvents, IBasicEvent
             // The close the enmy robot, the bigger the bullet.
             // The more precisely aimed, the bigger the bullet.
             // Don't fire us into disability, always save .1
-        radarLockOnTarget();
+        gunLockOnTarget();
         double absBearing = getHeading() + target.getTargetBearing();
         double bearingFromGun = normalRelativeAngleDegrees(absBearing - getGunHeading());
         if (getEnergy() > .2&&Math.abs(getGunTurnRemaining()) < 10) {
@@ -761,10 +761,10 @@ public class TanRobo  extends AdvancedRobot implements IBasicEvents, IBasicEvent
     }
 
 
-    private void radarLockOnTarget() {
+    private void gunLockOnTarget() {
         //get radar lock on the target
-        double radarTurn = getHeadingRadians() + target.getTargetBearingRadians() - getRadarHeadingRadians();
-        setTurnRadarRightRadians(Utils.normalRelativeAngle(radarTurn));
+        /*double radarTurn = getHeadingRadians() + target.getTargetBearingRadians() - getRadarHeadingRadians();
+        setTurnRadarRightRadians(Utils.normalRelativeAngle(radarTurn));*/
 
         //set gun toward enemy
         double gunTurn = getHeadingRadians() + target.getTargetBearingRadians() - getGunHeadingRadians();

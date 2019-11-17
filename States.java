@@ -18,7 +18,7 @@ public class States {
 
     //4 segmentation 0:e<=10, 1:10<e<=25, 2:25<e<=45, 3:e>45
     //but I already consider energy problem in fire so maybe I don't need this case.
-    //  private int EnergyAfterSeg;
+    private static final int SegEenergy = 4;
 
 
 
@@ -33,18 +33,16 @@ public class States {
     public static final int numStates;
 
 
-    private static final int Mapping[][][][][];
+    private static final int Mapping[][][];
 
 
     static {
-        Mapping = new int[SegDistance2target][SegAbsBearingRadians][SegX][SegY][SegGunHeat];
+        Mapping = new int[SegDistance2target][SegEenergy][SegGunHeat];
         int count = 0;
         for (int a = 0; a < SegDistance2target; a++)
-            for (int b = 0; b < SegAbsBearingRadians; b++)
-                for (int e = 0; e < SegX; e++)
-                    for (int f = 0; f < SegY; f++)
-                        for (int g = 0; g < SegGunHeat; g++)
-                            Mapping[a][b][e][f][g]= count++;
+            for (int b = 0; b < SegEenergy; b++)
+                for (int c = 0; c < SegGunHeat; c++)
+                    Mapping[a][b][c]= count++;
 
 
 
@@ -180,7 +178,7 @@ public class States {
         return (int)(newHeading / unit);
     }*/
 
-    public static int getIndexForStates(int distanceIndex,int absBearingRadiansIndex, int xIndex, int yIndex, int gunHeatIndex) {
-        return Mapping[distanceIndex][absBearingRadiansIndex][xIndex][yIndex][gunHeatIndex];
+    public static int getIndexForStates(int distanceIndex, int energyIndex, int gunHeatIndex) {
+        return Mapping[distanceIndex][energyIndex][gunHeatIndex];
     }
 }
