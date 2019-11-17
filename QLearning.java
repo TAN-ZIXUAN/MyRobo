@@ -48,7 +48,7 @@ public class QLearning {
         int action = 0;
         if (e < epsilon) {// exploration
             Random random = new Random();
-            action = random.nextInt(Actions.numActions - 1);
+            action = random.nextInt(Actions.numActions);
         }
 
         else {

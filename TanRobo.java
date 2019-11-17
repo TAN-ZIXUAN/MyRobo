@@ -43,12 +43,13 @@ public class TanRobo  extends AdvancedRobot implements IBasicEvents, IBasicEvent
 
     private double reward = 0.0;
 
-    private boolean movingForward; // is true when setAhead is called, set to false on setbBack
+    private boolean movingForward ; // is true when setAhead is called, set to false on setbBack
 
-    private boolean ifFirstRun = true;
+    private boolean ifFirstTurn = true;
 
-    private int initialState;
-    private int initialAction;
+    private int prevState;
+    private int prevAction;
+
 
     private int crtState;
     private int crtAction;
@@ -128,42 +129,44 @@ public class TanRobo  extends AdvancedRobot implements IBasicEvents, IBasicEvent
 
 
             //start
-            if(ifFirstRun) {
+            if(ifFirstTurn) {
 
                 //initial state
-                initialState = getState();
+                prevState = getState();
 
                 //random action
                 Random randomGenerator = new Random();
-                initialAction = randomGenerator.nextInt(Actions.numActions - 1);
+                prevAction = randomGenerator.nextInt(Actions.numActions);
 
                 //take action
-                takeAction(initialAction);
+                takeAction(prevAction);
 
-                crtState = initialState;
-                crtAction = initialAction;
+                ifFirstTurn = false;
 
 
             }else {
                 //get S'
-                nextState = getState();
+                crtState = getState();
 
                 //off-policy or on-policy
                 if(offPolicy) { //Q learning
-                    qLearningAgent.Q_Learning(crtState,crtAction,nextState,reward);
+                    qLearningAgent.Q_Learning(prevState,prevAction,crtState,reward);
                 }
                 else { //Sarsa
-                    nextAction = qLearningAgent.policySelectAction(nextState);
-                    qLearningAgent.Sarsa(crtState,crtAction,nextState,nextAction,reward);
+                    crtAction = qLearningAgent.policySelectAction(crtState);
+                    qLearningAgent.Sarsa(prevState,prevAction,crtState,crtAction,reward);
                 }
 
                 //saveData();
-                crtState = nextState; //S <- S'
+                prevState = crtState; //S <- S'
+                crtAction = qLearningAgent.policySelectAction(crtState);
+                prevAction = crtAction;
 
                 accumReward += reward;// get reward
                 accumRewardArr[(getRoundNum())] = accumReward;
 
                 reward = 0.0d;
+                takeAction(prevAction);
             }
 
         }

@@ -24,7 +24,7 @@ public class States {
    // public static final int SegHitByBullet = 2;
 
     //public static final int SegTargetBearingRadians = 4;
-    public static final int SegAbsBearingRadians = 4; //every 90 degrees
+    public static final int SegAbsBearingRadians = 4; //every 1/2 PI
 
     //public static final int SegHeading = 4;
 
