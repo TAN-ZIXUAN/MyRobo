@@ -111,12 +111,13 @@ public class TanRobo  extends AdvancedRobot implements IBasicEvents, IBasicEvent
 
 
         //After initializing Q table, enter the Loop for each episode until terminal state
+        gunLockOnTarget();
 
         while (true) {
 
             turnRadarRight(360);
             //radarLockOnTarget();
-
+            gunLockOnTarget();
 
             //gradually change epsilon
             //int crtRoundNum = getRoundNum();
@@ -129,13 +130,11 @@ public class TanRobo  extends AdvancedRobot implements IBasicEvents, IBasicEvent
             }
 
 
-            myStates.updateStateAfterSeg(target.getTargetDistance(),getEnergy(),getGunHeat());
-
             //start
             if(ifFirstTurn) {
 
                 //initial state
-                prevState = myStates.getState_LUT();
+                prevState = getState();
 
                 //random action
                 Random randomGenerator = new Random();
@@ -149,7 +148,7 @@ public class TanRobo  extends AdvancedRobot implements IBasicEvents, IBasicEvent
 
             }else {
                 //get S'
-                crtState = myStates.getState_LUT();
+                crtState = getState();
 
                 //off-policy or on-policy
                 if(offPolicy) { //Q learning
@@ -185,6 +184,7 @@ public class TanRobo  extends AdvancedRobot implements IBasicEvents, IBasicEvent
             }
 
             setTurnRadarLeftRadians(getRadarTurnRemainingRadians());
+            gunLockOnTarget();
 
         }
 
@@ -239,7 +239,7 @@ public class TanRobo  extends AdvancedRobot implements IBasicEvents, IBasicEvent
     }
 
     public void action_4 () {
-       myFire();
+        myFire();
         System.out.println("Action END ");
         /*setTurnRight(target.getTargetBearing() - 10);
         setAhead(-100);
@@ -247,6 +247,12 @@ public class TanRobo  extends AdvancedRobot implements IBasicEvents, IBasicEvent
         if (getTime() % 100 == 0) {
             fire(1);
         }*/
+    }
+
+    public void action_5 () {
+        System.out.println("take Action: rotate 1");
+        setTurnRight(target.getTargetBearing()+Actions.RobotTurnDegree_L);
+        ahead(target.getTargetDistance());
     }
 
     //methods for actions
@@ -593,7 +599,7 @@ public class TanRobo  extends AdvancedRobot implements IBasicEvents, IBasicEvent
     //load and save the Q_table
     public void loadData() {
         try {
-            lut.load(getDataFile("LUT.csv"));
+            lut.load(getDataFile("LUT.dat"));
 
 
         } catch (IOException e) {
@@ -603,7 +609,7 @@ public class TanRobo  extends AdvancedRobot implements IBasicEvents, IBasicEvent
 
     public void saveData() {
         try {
-            lut.save(getDataFile("LUT.csv"));
+            lut.save(getDataFile("LUT.dat"));
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -1071,6 +1077,10 @@ public class TanRobo  extends AdvancedRobot implements IBasicEvents, IBasicEvent
                 //myFire();
                 break;
 
+            case Actions.action_5:
+                System.out.println("take Action 4 ");
+                action_5();
+                break;
 
               /*  case Actions.robotAhead_L:
                     // radarLockOnTarget();

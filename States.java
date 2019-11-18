@@ -18,7 +18,7 @@ public class States {
 
     //4 segmentation 0:e<=10, 1:10<e<=25, 2:25<e<=45, 3:e>45
     //but I already consider energy problem in fire so maybe I don't need this case.
-    private static final int SegEnergy = 3;
+    private static final int SegEenergy = 4;
 
 
 
@@ -30,21 +30,17 @@ public class States {
 
     //public static final int SegHeading = 4;
 
-    public static int numStates;
+    public static final int numStates;
 
-    public static int distance, energy, gunHeat;
 
-    private static int Mapping[][][];
+    private static final int Mapping[][][];
 
-    States () {
-        Mapping = new int[SegDistance2target][SegEnergy][SegGunHeat];
 
-    }
-
-    private void initialize () {
+    static {
+        Mapping = new int[SegDistance2target][SegEenergy][SegGunHeat];
         int count = 0;
         for (int a = 0; a < SegDistance2target; a++)
-            for (int b = 0; b < SegEnergy; b++)
+            for (int b = 0; b < SegEenergy; b++)
                 for (int c = 0; c < SegGunHeat; c++)
                     Mapping[a][b][c]= count++;
 
@@ -52,49 +48,7 @@ public class States {
 
 
         numStates = count;
-        distance = 2;
-        energy = 2;
-        gunHeat = 0;
-
-
     }
-
-    public void updateStateAfterSeg(double distance, double energy, double gunHeat) {
-        this.distance = distanceAfterSeg(distance);
-        this.energy = energyAfterSeg(energy);
-        this.gunHeat = gunHeatAfterSeg(gunHeat);
-    }
-
-
-    public int getState_LUT () {
-        return Mapping[distance][energy][gunHeat];
-    }
-
-    //states for NN
-    public double[] getState_NN () {
-        double[] state_NN = new double[3];
-
-        state_NN[0] = distance;
-        state_NN[1] = energy;
-        state_NN[2] = gunHeat;
-
-        return state_NN;
-    }
-
-
-   /* static {
-        Mapping = new int[SegDistance2target][SegEnergy][SegGunHeat];
-        int count = 0;
-        for (int a = 0; a < SegDistance2target; a++)
-            for (int b = 0; b < SegEnergy; b++)
-                for (int c = 0; c < SegGunHeat; c++)
-                    Mapping[a][b][c]= count++;
-
-
-
-
-        numStates = count;
-    }*/
 
     public static int distanceAfterSeg(double actualDistance) {
         int d;  //3 segmentation close:d<=200, medium:200<d<=400, far:d>400
@@ -112,12 +66,14 @@ public class States {
     public static int energyAfterSeg(double actualEnergy) {
         int e;  //4 segmentation 0:e<=10, 1:10<e<=25, 2:25<e<=45, 3:e>45
 
-        if (actualEnergy <= 30)
+        if (actualEnergy <= 10)
             e = 0;
-        else if (actualEnergy <=60)
+        else if (actualEnergy <=25)
             e = 1;
-        else
+        else if (actualEnergy <= 45)
             e = 2;
+        else
+            e = 3;
 
         return e; //return the index for distance
     }

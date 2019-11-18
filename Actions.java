@@ -29,6 +29,8 @@ public class Actions {
     public static final int action_2 = 2;
     public static final int action_3 = 3;
     public static final int action_4 = 4;
+    public static final int action_5 = 5;
+
 
     /*public static final int robotAhead_L = 5;
     public static final int robotBack_L = 6;
@@ -36,7 +38,7 @@ public class Actions {
     public static final int robotTurnRight_L = 8;*/
 
 
-    public static final int numActions =5;
+    public static final int numActions =6;
 
     public static final double RobotMoveDistance = 100.0;
     public static final double RobotTurnDegree =  90.0;
