@@ -2,8 +2,6 @@ package MyRobo;
 
 public class States {
     public static final int SegDistance2target = 3;    //3 segmentation close:d<=200, medium:200<d<=400, far:d>400
-
-    private static double PI = Math.PI;
     // private int distanceAfterSeg;
 
    // public static final int SegEnergy = 4;
@@ -13,12 +11,10 @@ public class States {
 
     public static final int SegX = 8;
     public static final int SegY = 6;
-
-    public static final int SegGunHeat = 2;
-
+    public static final int SegGunheat = 2;
     //4 segmentation 0:e<=10, 1:10<e<=25, 2:25<e<=45, 3:e>45
     //but I already consider energy problem in fire so maybe I don't need this case.
-    private static final int SegEenergy = 4;
+    //  private int EnergyAfterSeg;
 
 
 
@@ -26,23 +22,23 @@ public class States {
    // public static final int SegHitByBullet = 2;
 
     //public static final int SegTargetBearingRadians = 4;
-    public static final int SegAbsBearingRadians = 4; //every 1/2 PI
+    public static final int SegAbsBearingRadians = 4; //every 90 degrees
 
     //public static final int SegHeading = 4;
 
     public static final int numStates;
 
 
-    private static final int Mapping[][][];
-
+    private static final int Mapping[][][][];
 
     static {
-        Mapping = new int[SegDistance2target][SegEenergy][SegGunHeat];
+        Mapping = new int[SegDistance2target][SegGunheat][SegX][SegY];
         int count = 0;
         for (int a = 0; a < SegDistance2target; a++)
-            for (int b = 0; b < SegEenergy; b++)
-                for (int c = 0; c < SegGunHeat; c++)
-                    Mapping[a][b][c]= count++;
+            for (int b = 0; b < SegGunheat; b++)
+                for (int e = 0; e < SegX; e++)
+                    for (int f = 0; f < SegY; f++)
+                        Mapping[a][b][e][f]= count++;
 
 
 
@@ -108,11 +104,11 @@ public class States {
 
     public static int absBearingRadiansAfterSeg(double absBearingRadians) {
         int index;
-        if(absBearingRadians >0 && absBearingRadians<= 0.5*PI)
+        if(absBearingRadians >0 && absBearingRadians<= 90)
             index = 0;
-        else if(absBearingRadians<= PI)
+        else if(absBearingRadians<= 180)
             index = 1;
-        else if(absBearingRadians<= 1.5*PI)
+        else if(absBearingRadians<=270)
             index = 2;
         else
             index = 3;
@@ -178,7 +174,7 @@ public class States {
         return (int)(newHeading / unit);
     }*/
 
-    public static int getIndexForStates(int distanceIndex, int energyIndex, int gunHeatIndex) {
-        return Mapping[distanceIndex][energyIndex][gunHeatIndex];
+    public static int getIndexForStates(int distanceIndex,int gunHeatIndex, int xIndex, int yIndex) {
+        return Mapping[distanceIndex][gunHeatIndex][xIndex][yIndex];
     }
 }
