@@ -14,7 +14,9 @@ import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
+import java.util.Arrays;
 import java.util.Random;
+import java.util.stream.DoubleStream;
 
 import static robocode.util.Utils.normalRelativeAngleDegrees;
 
@@ -41,27 +43,42 @@ public class TanRobo  extends AdvancedRobot implements IBasicEvents, IBasicEvent
     int scannedX = Integer.MIN_VALUE;
     int scannedY = Integer.MIN_VALUE;
 
+    private static int numStates = States.numStates;
+    private static int numActions = Actions.numActions;
+
     private double reward = 0.0;
 
     private boolean movingForward; // is true when setAhead is called, set to false on setbBack
-    //private boolean inWall; // is true when robot is near the wall
-    //for circling around the enemy
-    /*private double absBearing;
-    private double lastVel; //last velocity
-    private double gunTurnAmt; //amount to turn the gun*/
 
-    //boolean inWall; //is true when robot is near the wall
 
     private boolean ifFirstRun = true;
 
+    //for LUT
     private int prevState;
     private int prevAction;
 
     private int crtState;
     private int crtAction;
 
-    private int nextState;
-    private int nextAction;
+    //for NN
+    private double[] prevState_NN;
+    private double[] crtState_NN;
+    private static int argNumInputs = numStates + numActions;
+    private static int numTrainingVector = (3*2*8*6) * numActions; //each line of lut
+    private static int argNumHidden = 14;
+    private static double argLearningRate = 0.05;
+    private static double argMomentumRate = 0.9;
+    private static double argA = 0;
+    private static double argB = 1;
+    private static double lowerBoundW = -0.5;
+    private static double upperBoundW = 0.5;
+    private static NN nn = new NN(argNumInputs, argNumHidden, argLearningRate, argMomentumRate, argA, argB, lowerBoundW, upperBoundW);
+
+    public static final int SegDistance2target = 3;    //3 segmentation close:d<=200, medium:200<d<=400, far:d>400
+    public static final int SegX = 8;
+    public static final int SegY = 6;
+    public static final int SegGunHeat = 2;
+
 
 
     private boolean offPolicy = true;
@@ -71,9 +88,9 @@ public class TanRobo  extends AdvancedRobot implements IBasicEvents, IBasicEvent
 
     //rewards
     private double accumReward = 0.0;
-    private double rewardForWin = 100;
-    private double rewardForDeath = -100;
-    private boolean interReward = true;
+    private double rewardForWin = 10;
+    private double rewardForDeath = -10;
+    private boolean interReward =false;
 
     private int moveDirection = 1;
 
@@ -88,10 +105,16 @@ public class TanRobo  extends AdvancedRobot implements IBasicEvents, IBasicEvent
     private static int[] winRateArr_per10 = new int[1000000];
     //private int countB = 0;
 
+    //save win rate per 50 round:
+    public static final String LOG_WINRATE_50 = "./win_rate_per_50.csv";
+    private File winRatesFile_50;
+    private static int[] winRateArr_50 = new int[100000];
+
     //save accumReward per round
     public static final String LOG_ACCUMREWARD = "./accumReward_per_round.csv";
     private File accumRewardFile;
     private static double[] accumRewardArr = new double[10000000];
+
 
     public void run() {
 
@@ -113,6 +136,7 @@ public class TanRobo  extends AdvancedRobot implements IBasicEvents, IBasicEvent
 
         winRatesFile = getDataFile(LOG_WINRATE);
         winRatesFile_per10 = getDataFile(LOG_WINRATE_PER10);
+        winRatesFile_50 = getDataFile(LOG_WINRATE_50);
         accumRewardFile = getDataFile(LOG_ACCUMREWARD);
 
 
@@ -135,7 +159,10 @@ public class TanRobo  extends AdvancedRobot implements IBasicEvents, IBasicEvent
             if(ifFirstRun) {
 
                 //initial state
+                //for LUT
                 prevState = getState();
+                //for NN
+                prevState_NN = getState_NN();
 
                 //random action
                 Random randomGenerator = new Random();
@@ -152,23 +179,29 @@ public class TanRobo  extends AdvancedRobot implements IBasicEvents, IBasicEvent
 
             }else {
                 //get S'
+                //for LUT
                 crtState = getState();
+                crtAction = qLearningAgent.policySelectAction(crtState);
+                //for NN
+                crtState_NN = getState_NN();
 
                 //off-policy or on-policy
                 if(offPolicy) { //Q learning
                     qLearningAgent.Q_Learning(prevState,prevAction,crtState,reward);
+
                 }
                 else { //Sarsa
-                    crtAction = qLearningAgent.policySelectAction(crtState);
+                    //crtAction = qLearningAgent.policySelectAction(crtState);
                     qLearningAgent.Sarsa(prevState,prevAction,crtState,crtAction,reward);
                 }
 
                 prevState = crtState; //S <- S'
+                prevAction = crtAction;
 
                 accumReward += reward;// get reward
-                accumRewardArr[(getRoundNum())] = accumReward;
+                accumRewardArr[(getRoundNum())/50] = accumReward;
                 reward = 0.0d;
-                crtAction = qLearningAgent.policySelectAction(crtAction);
+
                 if (interReward) {
                     if (prevAction == Actions.robotFire && getGunHeat() != 0)
                         reward += -3;
@@ -310,8 +343,9 @@ public class TanRobo  extends AdvancedRobot implements IBasicEvents, IBasicEvent
         //int targetBearingRadians_= States.targetBearingAfterSeg(target.getTargetBearingRadians());
         int absBearingRadians_ = States.absBearingRadiansAfterSeg(target.getTargetHeadingRadians()+ target.getTargetBearingRadians());
        // int heading_ = States.headingAfterSeg(getHeading());
+        int gunHeat_ = States.gunHeatAfterSeg(getGunHeat());
 
-        int state = States.getIndexForStates(distance_,absBearingRadians_, x_, y_);
+        int state = States.getIndexForStates(distance_,gunHeat_, x_, y_);
         return state;
 
     }
@@ -325,7 +359,7 @@ public class TanRobo  extends AdvancedRobot implements IBasicEvents, IBasicEvent
 
     @Override
     public void onBulletHit(BulletHitEvent bulletHitEvent) {
-        double change = bulletHitEvent.getBullet().getPower();
+        double change = bulletHitEvent.getBullet().getPower()*3;
         //System.out.println("Bullet Hit: " + change);
         if (interReward) {
             reward += change;
@@ -341,7 +375,7 @@ public class TanRobo  extends AdvancedRobot implements IBasicEvents, IBasicEvent
     @Override
     public void onBulletMissed(BulletMissedEvent bulletMissedEvent) {
 
-        double change = -bulletMissedEvent.getBullet().getPower()*0.2;
+        double change = -bulletMissedEvent.getBullet().getPower();
        // System.out.println("Bullet Missed: " + change);
         if (interReward) reward += change;
 
@@ -364,7 +398,7 @@ public class TanRobo  extends AdvancedRobot implements IBasicEvents, IBasicEvent
     @Override
     public void onHitByBullet(HitByBulletEvent hitByBulletEvent) {
         double power = hitByBulletEvent.getBullet().getPower();
-        double change = -power;
+        double change = -3*power;
         //System.out.println("Hit By Bullet: " + change);
         if (interReward) reward += change;
 
@@ -377,13 +411,17 @@ public class TanRobo  extends AdvancedRobot implements IBasicEvents, IBasicEvent
         /*double change = -6.0;
         System.out.println("Hit Robot: " + change);
         if (interReward) reward += change;*/
+
+        double change = -3.0;
+        // System.out.println("Hit Wall: " + change);
+        if (interReward) reward += change;
     }
 
     @Override
     public void onHitWall(HitWallEvent hitWallEvent) {
         moveDirection = -moveDirection; // reverse direction upon hitting a wall
 
-        double change = -1.0;
+        double change = -3.0;
        // System.out.println("Hit Wall: " + change);
         if (interReward) reward += change;
 
@@ -449,7 +487,7 @@ public class TanRobo  extends AdvancedRobot implements IBasicEvents, IBasicEvent
         target.setTargetDistance(10000);
         //numTotalGames++;
 
-        if (interReward) reward += 50;
+        //if (interReward) reward += 50;
 
 
     }
@@ -458,7 +496,8 @@ public class TanRobo  extends AdvancedRobot implements IBasicEvents, IBasicEvent
     public void onWin(WinEvent winEvent) {
         System.out.println("Win!!!");
         winRateArr[(getRoundNum() - 1) / 100]++;
-        winRateArr_per10[(getRoundNum() - 1) / 50]++;
+        winRateArr_50[(getRoundNum() - 1) / 50]++;
+        winRateArr_per10[(getRoundNum() - 1) / 10]++;
 
 
         reward += rewardForWin;
@@ -844,6 +883,7 @@ public class TanRobo  extends AdvancedRobot implements IBasicEvents, IBasicEvent
         saveStats_accumAward(getRoundNum(),accumRewardArr);*/
         saveStats_win_perHundred(winRatesFile);
         saveStats_win_per10(winRatesFile_per10);
+        saveStats_win_per50(winRatesFile_50);
         saveStats_award(accumRewardFile);
 
     }
@@ -852,10 +892,34 @@ public class TanRobo  extends AdvancedRobot implements IBasicEvents, IBasicEvent
 
         saveStats_win_perHundred(winRatesFile);
         saveStats_win_per10(winRatesFile_per10);
+        saveStats_win_per50(winRatesFile_50);
         saveStats_award(accumRewardFile);
 
     }
 
+    private void saveStats_win_per50 (File statsFile) {
+
+        int i;
+
+        try
+        {
+            RobocodeFileOutputStream fileOut = new RobocodeFileOutputStream(statsFile);
+            PrintStream out = new PrintStream(new BufferedOutputStream(fileOut));
+            out.format("100 Rounds, Wins,\n");
+            for (i = 0; i < getRoundNum()/50; i++)
+            {
+                out.format("%d, %f,\n", i + 1, (winRateArr_50[i])/50.0);
+            }
+
+            out.close();
+            fileOut.close();
+        }
+        catch (IOException exception)
+        {
+            exception.printStackTrace();
+        }
+
+    }
 
 
     private void saveStats_win_perHundred(File statsFile) {
@@ -889,9 +953,9 @@ public class TanRobo  extends AdvancedRobot implements IBasicEvents, IBasicEvent
             RobocodeFileOutputStream fileOut = new RobocodeFileOutputStream(statsFile);
             PrintStream out = new PrintStream(new BufferedOutputStream(fileOut));
             out.format("per Round, AccumReward,\n");
-            for (i = 0; i < getRoundNum(); i++)
+            for (i = 0; i < getRoundNum()/50; i++)
             {
-                out.format("%d, %f,\n", i + 1, accumRewardArr[i]);
+                out.format("%d, %f,\n", i + 1, accumRewardArr[i]/50.0);
             }
 
             out.close();
@@ -1162,6 +1226,128 @@ public class TanRobo  extends AdvancedRobot implements IBasicEvents, IBasicEvent
         execute();
         System.out.println("Action ends");
     }
+
+    private double[] getState_NN() {//no quantization
+        //for states in NN
+        double state_NN[] = new double[4]; //distance gunHeat X, Y
+
+        //input with normalization x_ = (x - min)/(max - min) (0~1)
+        //and scale it to -1 ~ 1: x__ = 2/x_ - 1;
+        state_NN[1] = 2 / (target.getTargetDistance()/1000.0) - 1;
+        state_NN[2] = 2 / (getGunHeat()/1.0) - 1;
+        state_NN[3] = 2 / (getX()/800.0) - 1;
+        state_NN[4] = 2 / (getY()/600.0) - 1;
+
+        return state_NN;
+    }
+
+    private double[] action_NN(int action) { //for action{-1 -1 -1 -1 -1 1} 1 for chosen action, -1 for non-chosen action
+        double[] action_NN = new double[numActions];
+        Arrays.fill(action_NN, -1.0);
+        //set chosen action to -1
+        action_NN[action] = 1.0;
+        return action_NN;
+    }
+
+    private double getQValue_NN(double[] state_NN, double[] action_NN, double desiredQ) {
+
+        //combine state and action to form input vector
+        double[] input_NN = DoubleStream.concat(Arrays.stream(state_NN), Arrays.stream(action_NN)).toArray();
+
+        //train in NN and get output: Q value
+        double output_NN = nn.outputFor(input_NN);
+        nn.train(input_NN, desiredQ);
+        output_NN = nn.outputFor(input_NN);
+
+        return output_NN;
+
+    }
+
+ /*   //Training NN with LUT
+    public static void main(String[] args) throws FileNotFoundException {
+        TanRobo robo = new TanRobo();
+        LUT lut_NN = new LUT();
+        File weights_file = new File("./TanRobo.data.weights.txt");
+        robo.loadData();
+
+        List<double[]> inputs = new ArrayList<double[]>();
+        List<Double> output = new ArrayList<Double>();
+
+        //initialize input vector
+        for (int a = 0; a < SegDistance2target; a++) {
+            for (int b = 0; b < SegGunHeat; b++)
+                for (int c = 0; c < SegX; c++)
+                    for (int d = 0; d < SegY; d++)
+                        for (int action = 0; action < numActions; action++) {
+                            double[] newInput = {
+                                    2.0 * (double) a / (double) (SegDistance2target - 1) - 1,
+                                    2.0 * (double) b / (double) (SegGunHeat - 1) - 1,
+                                    2.0 * (double) c / (double) (SegX - 1) - 1,
+                                    2.0 * (double) d / (double) (SegY - 1) - 1
+                            };
+
+                            double[] action_NN = new double[numActions];
+                            Arrays.fill(action_NN, -1.0);
+                            action_NN[action] = 1.0;
+
+                            //combine state and action
+                            newInput = DoubleStream.concat(Arrays.stream(newInput), Arrays.stream(action_NN)).toArray();
+
+                            //todo confusing here
+                            int crtState = States.Mapping[a][b][c][d];
+                            double newOutput = (lut_NN.qTable[crtState][action] - -10) / 20;
+                            if (lut_NN.qTable[crtState][action] != 0) {
+                                inputs.add(newInput);
+                                output.add((lut_NN.qTable[crtState][action] - -10) / 20);
+                            }
+
+
+                        }
+        }
+
+        int count  = 0;
+        int convergeTime = 0;
+        int iterationTime = 10;
+        double totalErr = 0;
+        double sqrtErr = 999999; //root-mean-square error
+
+        //Test Constants
+        double inputVector[][] = new double[inputs.size()][argNumInputs];
+        double outputVector[] =  new double[inputs.size()];
+        inputVector = inputs.toArray(inputVector);
+
+        for (int i = 0; i < output.size(); i++) {
+            outputVector[i] = output.get(i);
+        }
+
+        for (int k = 0; k < iterationTime; k++) {
+
+            int max_epochs = 10000;
+            for (int i = 0; i <  max_epochs; i++) {
+                totalErr = 0;
+                for (int j = 0; j < inputVector.length; j++) {
+                    totalErr += nn.train(inputVector[j], outputVector[j]);
+
+                }
+                sqrtErr = Math.sqrt(totalErr);
+
+                System.out.println(i + ";" + sqrtErr);
+                nn.save(weights_file);
+            }
+
+            *//*if (sqrtErr < 0.05) {
+                convergeTime++;
+                break;
+            }*//*
+        }
+
+
+
+
+
+
+
+    }*/
 
 }
 
