@@ -72,7 +72,7 @@ public class TanRobo  extends AdvancedRobot implements IBasicEvents, IBasicEvent
     private static double argB = 1;
     private static double lowerBoundW = -0.5;
     private static double upperBoundW = 0.5;
-    private static NN nn = new NN(argNumInputs, argNumHidden, argLearningRate, argMomentumRate, argA, argB, lowerBoundW, upperBoundW);
+    NN nn = new NN(argNumInputs, argNumHidden, argLearningRate, argMomentumRate, argA, argB, lowerBoundW, upperBoundW);
 
     public static final int SegDistance2target = 3;    //3 segmentation close:d<=200, medium:200<d<=400, far:d>400
     public static final int SegX = 8;
@@ -162,7 +162,7 @@ public class TanRobo  extends AdvancedRobot implements IBasicEvents, IBasicEvent
                 //for LUT
                 prevState = getState();
                 //for NN
-                prevState_NN = getState_NN();
+                //prevState_NN = getState_NN();
 
                 //random action
                 Random randomGenerator = new Random();
@@ -183,7 +183,7 @@ public class TanRobo  extends AdvancedRobot implements IBasicEvents, IBasicEvent
                 crtState = getState();
                 crtAction = qLearningAgent.policySelectAction(crtState);
                 //for NN
-                crtState_NN = getState_NN();
+                //crtState_NN = getState_NN();
 
                 //off-policy or on-policy
                 if(offPolicy) { //Q learning

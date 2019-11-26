@@ -1,7 +1,8 @@
 package MyRobo;
 
+import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -16,10 +17,10 @@ public class NN_Robocode {
     public static final int SegY = 6;
     public static final int SegGunHeat = 2;
 
-    private static int numStates = States.numStates;
-    private static int numActions = Actions.numActions;
+    private static int numStates = 4;
+    private static int numActions = 6;
 
-    private static int argNumInputs = numStates + numActions;
+    private static int argNumInputs = 10;
     private static int numTrainingVector = (3 * 2 * 8 * 6) * numActions; //each line of lut
     private static int argNumHidden = 14;
     private static double argLearningRate = 0.05;
@@ -29,14 +30,15 @@ public class NN_Robocode {
     private static double lowerBoundW = -0.5;
     private static double upperBoundW = 0.5;
     private static NN nn = new NN(argNumInputs, argNumHidden, argLearningRate, argMomentumRate, argA, argB, lowerBoundW, upperBoundW);
+    private static File lutFile = new File ("C:\\robocode\\robots\\MyRobo\\TanRobo.data\\lut.dat") ;
 
 
     //Training NN with LUT
-    public static void my(String[] args) throws FileNotFoundException {
+    public static void main(String[] args) throws IOException {
         TanRobo robo = new TanRobo();
         LUT lut_NN = new LUT();
         File weights_file = new File("./TanRobo.data.weights.txt");
-        robo.loadData();
+        lut_NN.load(lutFile);
 
         List<double[]> inputs = new ArrayList<double[]>();
         List<Double> output = new ArrayList<Double>();
@@ -89,6 +91,9 @@ public class NN_Robocode {
         }
 
         for (int k = 0; k < iterationTime; k++) {
+            NN nn = new NN(argNumInputs, argNumHidden, argLearningRate, argMomentumRate, argA, argB, lowerBoundW, upperBoundW);
+            nn.initializeWeights();
+
 
             int max_epochs = 10000;
             for (int i = 0; i < max_epochs; i++) {
@@ -108,6 +113,11 @@ public class NN_Robocode {
                 break; //stop training
             }
         }
+    }
+
+    public void LoadLUT() {
+        BufferedReader reader = null;
+
     }
 }
 

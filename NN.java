@@ -64,7 +64,7 @@ public class NN implements NeuralNetInterface {
         this.argB = argB;
         this.lowerBoundW = lowerBoundW;
         this.upperBoundW = upperBoundW;
-        initializeWeights();
+        //initializeWeights();
     }
 
     @Override
@@ -92,9 +92,9 @@ public class NN implements NeuralNetInterface {
 
         //initialize weights from input layer to hidden
         //for bias: no weights from input layer to bias node in hidden layer
-        for(int hidden = 0;hidden < argNumHidden;hidden++) {
+        /*for(int hidden = 0; hidden < argNumHidden; hidden++) {
 
-            for(int input = 0;input < numInputs;input++) { //last item is the bias, no weights for bias from input to hidden layer
+            for(int input = 0; input < numInputs; input++) { //last item is the bias, no weights for bias from input to hidden layer
                 curtInput2HiddenWeights[hidden][input] = getRandomDouble(lowerBoundW,upperBoundW);
                 deltaInput2HiddenWeights[hidden][input] = 0.0;
             }
@@ -105,7 +105,25 @@ public class NN implements NeuralNetInterface {
         for(int hidden = 0;hidden < numHidden;hidden++) {
             curtHidden2OutputWeights[hidden] = getRandomDouble(lowerBoundW,upperBoundW);
             deltaHidden2OutputWeights[hidden] = 0.0;
+        }*/
+
+        for (double[] array:curtInput2HiddenWeights) {
+            for (double element:array)
+                element = getRandomDouble(lowerBoundW,upperBoundW);
         }
+        for (double[] array:deltaInput2HiddenWeights) {
+            for (double elment:array)
+                elment = 0;
+        }
+
+        for (double element:curtHidden2OutputWeights) {
+            element = getRandomDouble(lowerBoundW,upperBoundW);
+        }
+        for (double elment:deltaHidden2OutputWeights)
+            elment = 0.0;
+
+
+
 
 
     }

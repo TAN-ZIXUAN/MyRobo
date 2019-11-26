@@ -36,7 +36,7 @@ actions:circle retreat, advance, fire
     public void initialiseLUT() { //set all values in q_table to 0
         for(int i=0; i<States.numStates; i++)
             for(int j=0; j<Actions.numActions; j++) {
-                qTable[i][j] = (Math.random() - 0.5) * 5000;  //Math.random[0,1)
+                qTable[i][j] = (Math.random() - 0.5) ;  //Math.random[0,1)
                 /*Random r = new Random();
                 int low = -1000;
                 int high = 1000;
