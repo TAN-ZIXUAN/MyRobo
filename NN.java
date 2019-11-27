@@ -28,13 +28,13 @@ public class NN implements NeuralNetInterface {
 
     //add bias
     //let the last item be bias ;
-    private int numInputs = argNumInputs + 1;
-    private int numHidden = argNumHidden + 1;
+    private int numInputs;
+    private int numHidden;
     //private int numOutputs = argNumOutputs;
 
     //arrays to store the neuron values in input, hidden and output layers
     private double[] inputLayers = new double[numInputs];   //contain bias
-    double[] hiddenAfterActivation = new double[numHidden];
+    private double[] hiddenAfterActivation;
 
 
     //delta of neurons in hidden layer and output layer
@@ -42,16 +42,14 @@ public class NN implements NeuralNetInterface {
     //private double[] deltaOutputLayer = new double[numOutputs];
 
     //arrays to store weights from input layer to hidden
-    private double[][] curtInput2HiddenWeights = new double[argNumHidden][numInputs]; //no input to hidden layers weights for bias node in hidden layer
-    private double[][] deltaInput2HiddenWeights = new double[argNumHidden][numInputs];
+    private double[][] curtInput2HiddenWeights;//no input to hidden layers weights for bias node in hidden layer
+    private double[][] deltaInput2HiddenWeights;
 
     //arrays to store weights from hidden layer to output layer
-    private double[] curtHidden2OutputWeights = new double[numHidden];
-    private double[] deltaHidden2OutputWeights = new double[numHidden];
+    private double[] curtHidden2OutputWeights;
+    private double[] deltaHidden2OutputWeights;
 
-    //training set X & Y
-    private double[][]trainSetX;
-    private double[]trainSetY;
+
 
 
 
@@ -65,6 +63,14 @@ public class NN implements NeuralNetInterface {
         this.lowerBoundW = lowerBoundW;
         this.upperBoundW = upperBoundW;
         //initializeWeights();
+        numInputs = argNumInputs + 1;
+        numHidden = argNumHidden + 1;
+        hiddenAfterActivation = new double[numHidden];
+        curtInput2HiddenWeights = new double[argNumHidden][numInputs];
+        deltaInput2HiddenWeights = new double[argNumHidden][numInputs];
+        curtHidden2OutputWeights = new double[numHidden];
+        deltaHidden2OutputWeights = new double[numHidden];
+
     }
 
     @Override
@@ -92,7 +98,7 @@ public class NN implements NeuralNetInterface {
 
         //initialize weights from input layer to hidden
         //for bias: no weights from input layer to bias node in hidden layer
-        /*for(int hidden = 0; hidden < argNumHidden; hidden++) {
+        for(int hidden = 0; hidden < argNumHidden; hidden++) {
 
             for(int input = 0; input < numInputs; input++) { //last item is the bias, no weights for bias from input to hidden layer
                 curtInput2HiddenWeights[hidden][input] = getRandomDouble(lowerBoundW,upperBoundW);
@@ -105,9 +111,9 @@ public class NN implements NeuralNetInterface {
         for(int hidden = 0;hidden < numHidden;hidden++) {
             curtHidden2OutputWeights[hidden] = getRandomDouble(lowerBoundW,upperBoundW);
             deltaHidden2OutputWeights[hidden] = 0.0;
-        }*/
+        }
 
-        for (double[] array:curtInput2HiddenWeights) {
+        /*for (double[] array:curtInput2HiddenWeights) {
             for (double element:array)
                 element = getRandomDouble(lowerBoundW,upperBoundW);
         }
@@ -120,7 +126,7 @@ public class NN implements NeuralNetInterface {
             element = getRandomDouble(lowerBoundW,upperBoundW);
         }
         for (double elment:deltaHidden2OutputWeights)
-            elment = 0.0;
+            elment = 0.0;*/
 
 
 
@@ -183,7 +189,7 @@ public class NN implements NeuralNetInterface {
             hiddenLayers[i] = curtInput2HiddenWeights[i][argNumInputs]*1.0; //for input bias
             // for actual input
             for (int j = 0; j < argNumInputs; j++) {
-                hiddenLayers[i] += curtInput2HiddenWeights[i][j]*x[j];
+                hiddenLayers[i] += curtInput2HiddenWeights[i][j] * x[j];
             }
             //hidden layer value after activation
             hiddenAfterActivation[i] = customSigmoid(hiddenLayers[i]);
