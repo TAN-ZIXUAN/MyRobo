@@ -22,14 +22,14 @@ public class NN_Robocode {
 
     private static int argNumInputs = 10 ;
     private static int argNumHidden = 14;
-    private static double argLearningRate = 0.05;
-    private static double argMomentumRate = 0.1;
-    private static double argA = -1;
-    private static double argB = 1;
+    private static double argLearningRate = 0.002;
+    private static double argMomentumRate = 0.9;
+    private static double argA = -2;
+    private static double argB = 2;
     private static double lowerBoundW = -0.5;
     private static double upperBoundW = 0.5;
     //private static NN nn = new NN(argNumInputs, argNumHidden, argLearningRate, argMomentumRate, argA, argB, lowerBoundW, upperBoundW);
-    private static File lutFile = new File ("C:\\robocode\\robots\\MyRobo\\TanRobo.data\\lut.dat") ;
+    private static File lutFile = new File ("C:\\robocode\\robots\\MyRobo\\TanRobo.data\\LUT.dat") ;
 
 
     //Training NN with LUT
@@ -98,10 +98,10 @@ public class NN_Robocode {
                             int crtState = States.Mapping[a][b][c][d];
 
                             //for desired output we need to normalize it
-                            double newOutput = (lut_NN.qTable[crtState][action] - -10) / 20;
+                            double newOutput = (lut_NN.qTable[crtState][action]) / 2500;
                             if (lut_NN.qTable[crtState][action] != 0) {
                                 inputs.add(newInput);
-                                output.add((lut_NN.qTable[crtState][action] - -10) / 20);
+                                output.add((lut_NN.qTable[crtState][action]) / 2500);
                             }
                         }
                         }
@@ -118,8 +118,8 @@ public class NN_Robocode {
         int count = 0;
         int convergeTime = 0;
         int iterationTime = 10;
-        double totalErr = 0;
-        double sqrtErr = 999999; //root-mean-square error
+        double[] totalErr;
+        double rmsErr = 999999; //root-mean-square error
 
         //Test Constants
         double inputVector[][] = new double[inputs.size()][argNumInputs];
@@ -134,23 +134,25 @@ public class NN_Robocode {
             NN nn = new NN(argNumInputs, argNumHidden, argLearningRate, argMomentumRate, argA, argB, lowerBoundW, upperBoundW);
             nn.initializeWeights();
             nn.load(weights_file);
+            totalErr = new double[inputVector.length];
 
 
 
             int max_epochs = 10000;
             for (int i = 0; i < max_epochs; i++) {
-                totalErr = 0;
+                double sumErr = 0;
                 for (int j = 0; j < inputVector.length; j++) {
-                    totalErr += nn.train(inputVector[j], outputVector[j]); //square error: error^2
+                    totalErr[j]= nn.train(inputVector[j], outputVector[j]); //square error: error^2
+                    sumErr += totalErr[j];
 
                 }
-                sqrtErr = Math.sqrt(totalErr);//square root (error^2)^(1/2)
+                rmsErr = Math.sqrt(sumErr/inputVector.length); //rms error
 
-                System.out.println("epoch"+i + ":" + sqrtErr);
+                System.out.println("k: "+"epoch"+i + ":" + rmsErr);
                 nn.save(weights_file);
             }
 
-            if (sqrtErr < 0.05) {
+            if (rmsErr < 0.05) {
                 convergeTime++;
                 break; //stop training
             }
