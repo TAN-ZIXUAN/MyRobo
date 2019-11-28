@@ -70,10 +70,10 @@ public class TanRobo  extends AdvancedRobot implements IBasicEvents, IBasicEvent
     private double[] prevAction_NN;
     private double[] crtAction_NN;
     private static int argNumInputs = 10;
-    private static int argNumHidden = 14;
-    private static double argLearningRate = 0.05;
+    private static int argNumHidden = 20;
+    private static double argLearningRate = 0.002;
     private static double argMomentumRate = 0.9;
-    private static double argA = 0;
+    private static double argA = -1;
     private static double argB = 1;
     private static double lowerBoundW = -0.5;
     private static double upperBoundW = 0.5;
@@ -122,6 +122,11 @@ public class TanRobo  extends AdvancedRobot implements IBasicEvents, IBasicEvent
 
 
     public void run() {
+       /* try {
+            nn.load(weights_file);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }*/
 
 
         /*lut = new LUT();
@@ -1072,7 +1077,9 @@ public class TanRobo  extends AdvancedRobot implements IBasicEvents, IBasicEvent
     }
 
     private void trainWeights(double[] inputVector, double desiredQ) {
-        nn.train(inputVector,desiredQ);
+        double sqrtErr;
+        sqrtErr = Math.sqrt(nn.train(inputVector,desiredQ));
+        System.out.println(sqrtErr);
     }
 
     private double getMaxQ_NN(double[] state_NN) {

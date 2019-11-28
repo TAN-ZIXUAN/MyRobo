@@ -70,6 +70,7 @@ public class NN implements NeuralNetInterface {
         deltaInput2HiddenWeights = new double[argNumHidden][numInputs];
         curtHidden2OutputWeights = new double[numHidden];
         deltaHidden2OutputWeights = new double[numHidden];
+        initializeWeights();
 
     }
 

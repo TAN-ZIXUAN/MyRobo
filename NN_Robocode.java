@@ -21,7 +21,6 @@ public class NN_Robocode {
     private static int numActions = Actions.numActions;
 
     private static int argNumInputs = 10 ;
-    private static int numTrainingVector = (3 * 2 * 8 * 6) * numActions; //each line of lut
     private static int argNumHidden = 14;
     private static double argLearningRate = 0.05;
     private static double argMomentumRate = 0.1;
@@ -51,17 +50,42 @@ public class NN_Robocode {
          * newData = a + (data - min)*(b - a)/(max -min)
          *
          */
-
+        double[] _distance = new double[SegDistance2target];
+        double[] _gunHeat = new double[SegGunHeat];
+        double[] _x = new double[SegX];
         for (int a = 0; a < SegDistance2target; a++) {
-            for (int b = 0; b < SegGunHeat; b++)
-                for (int c = 0; c < SegX; c++)
-                    for (int d = 0; d < SegY; d++)
-                        for (int action = 0; action < numActions; action++) {
+
+            if (a == 0) {
+                _distance[0]  = 200;
+            }
+            else if (a == 1 ) {
+                _distance[1] = 400;
+            }
+            else {
+                _distance[2] = 1000;
+            }
+            for (int b = 0; b < SegGunHeat; b++) {
+
+                if (b == 0) {
+                    _gunHeat[0] = 0;
+                }
+                else {
+                    _gunHeat[1] = 1;
+                }
+                for (int c = 0; c < SegX; c++) {
+
+                    _x[c] = (c + 1)*100;
+
+                    for (int d = 0; d < SegY; d++) {
+                        double[] _y = new double[SegY];
+                        _y[d] = (d + 1)*100;
+
+                        for (int action = 0; action < numActions; action ++) {
                             double[] newInput = {
-                                    2.0 * (double) a / (double) (SegDistance2target) - 1,
-                                    2.0 * (double) b / (double) (SegGunHeat) - 1,
-                                    2.0 * (double) c / (double) (SegX) - 1,
-                                    2.0 * (double) d / (double) (SegY) - 1
+                                    2.0 * _distance[a]/1000.0 - 1,
+                                    2.0 * _gunHeat[b] /1.0 - 1,
+                                    2.0 * _x[c] / 800.0 - 1,
+                                    2.0 * _y[d] / 800.0 - 1
                             };
 
                             double[] action_NN = new double[numActions];
@@ -71,7 +95,6 @@ public class NN_Robocode {
                             //combine state and action
                             newInput = DoubleStream.concat(Arrays.stream(newInput), Arrays.stream(action_NN)).toArray();
 
-                            //convert LUT to training Vectors: X and Y
                             int crtState = States.Mapping[a][b][c][d];
 
                             //for desired output we need to normalize it
@@ -80,10 +103,17 @@ public class NN_Robocode {
                                 inputs.add(newInput);
                                 output.add((lut_NN.qTable[crtState][action] - -10) / 20);
                             }
-
-
                         }
-        }
+                        }
+
+                    }
+                }
+
+
+            }
+
+
+
 
         int count = 0;
         int convergeTime = 0;
