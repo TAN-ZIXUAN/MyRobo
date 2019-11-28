@@ -42,12 +42,12 @@ public class NN implements NeuralNetInterface {
     //private double[] deltaOutputLayer = new double[numOutputs];
 
     //arrays to store weights from input layer to hidden
-    private double[][] curtInput2HiddenWeights;//no input to hidden layers weights for bias node in hidden layer
-    private double[][] deltaInput2HiddenWeights;
+    public static double[][] curtInput2HiddenWeights;//no input to hidden layers weights for bias node in hidden layer
+    public static double[][] deltaInput2HiddenWeights;
 
     //arrays to store weights from hidden layer to output layer
-    private double[] curtHidden2OutputWeights;
-    private double[] deltaHidden2OutputWeights;
+    public static double[] curtHidden2OutputWeights;
+    public static double[] deltaHidden2OutputWeights;
 
 
 
@@ -267,33 +267,33 @@ public class NN implements NeuralNetInterface {
     //save weights
     @Override
     public void save(File argFile) {
-        PrintStream wStream = null;
+        PrintStream saveFile = null;
         try {
             float weight;
-            wStream = new PrintStream(new FileOutputStream(argFile));
+            saveFile = new PrintStream(new FileOutputStream(argFile));
             //weights: input to hidden
             for (int i = 0; i < argNumHidden; i++)
                 for (int j = 0; j < numInputs; j++) {
                     weight = (float) curtInput2HiddenWeights[i][j];
-                    wStream.println(String.format("%s", weight));
+                    saveFile.println(String.format("%s", weight));
                 }
 
             //weights: hidden to output
             for (int i = 0; i <  numHidden; i++) {
                 weight = (float) curtHidden2OutputWeights[i];
-                wStream.println(String.format("%s", weight));
+                saveFile.println(String.format("%s", weight));
             }
 
-            if (wStream.checkError()) {
+            if (saveFile.checkError()) {
                 System.err.println("Can not Save!");
             }
-            wStream.close();
+            saveFile.close();
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
         finally {
-            try { if (wStream != null) {
-                wStream.close();
+            try { if (saveFile != null) {
+                saveFile.close();
             }
 
             } catch (Exception e) {
