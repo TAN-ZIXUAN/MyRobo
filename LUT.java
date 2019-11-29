@@ -110,10 +110,13 @@ actions:circle retreat, advance, fire
 
         BufferedReader read = null;
         try {
+            System.out.println("loading lut");
             read = new BufferedReader(new FileReader(argFileName));
             for (int i = 0; i < States.numStates; i++)
                 for (int j = 0; j < Actions.numActions; j++) {
+
                     qTable[i][j] = Double.parseDouble(read.readLine());
+                    System.out.println(qTable[i][j]);
 
                 }
         } catch (NumberFormatException e) {

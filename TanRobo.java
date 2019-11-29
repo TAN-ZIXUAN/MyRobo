@@ -73,7 +73,7 @@ public class TanRobo  extends AdvancedRobot implements IBasicEvents, IBasicEvent
     private static int argNumHidden = 20;
     private static double argLearningRate = 0.002;
     private static double argMomentumRate = 0.9;
-    private static double argA = -1;
+    private static double argA = 0;
     private static double argB = 1;
     private static double lowerBoundW = -0.5;
     private static double upperBoundW = 0.5;
@@ -197,6 +197,7 @@ public class TanRobo  extends AdvancedRobot implements IBasicEvents, IBasicEvent
                 crtState_NN = getState_NN();
                 crtAction_NN = policySelectAction_NN(crtState_NN);
                 double prevQ = nn.outputFor(getInputVector(prevState_NN,prevAction_NN));
+                System.out.println("prevQ"+prevQ);
                 double desiredQ = Q_learning_NN(prevQ,crtState_NN,reward);
 
                /* prevState = crtState; //S <- S'
@@ -870,13 +871,13 @@ public class TanRobo  extends AdvancedRobot implements IBasicEvents, IBasicEvent
         /**The following four lines add wall avoidance.  They will only
          affect us if the bot is close to the walls due to the
          force from the walls decreasing at a power 3.**/
-        xforce += 5000 / Math.pow(getRange(getX(),
+        xforce += 50000 / Math.pow(getRange(getX(),
                 getY(), getBattleFieldWidth(), getY()), 3);
-        xforce -= 5000 / Math.pow(getRange(getX(),
+        xforce -= 50000 / Math.pow(getRange(getX(),
                 getY(), 0, getY()), 3);
-        yforce += 5000 / Math.pow(getRange(getX(),
+        yforce += 50000 / Math.pow(getRange(getX(),
                 getY(), getX(), getBattleFieldHeight()), 3);
-        yforce -= 5000 / Math.pow(getRange(getX(),
+        yforce -= 50000 / Math.pow(getRange(getX(),
                 getY(), getX(), 0), 3);
 
         //Move in the direction of our resolved force.
@@ -962,6 +963,7 @@ public class TanRobo  extends AdvancedRobot implements IBasicEvents, IBasicEvent
              */
 
             case Actions.robotAhead:
+                avoidWalls();
                 radarLockOnTarget();
                 System.out.println("take Action: ahead ");
                 setAhead(Actions.RobotMoveDistance);
@@ -971,6 +973,7 @@ public class TanRobo  extends AdvancedRobot implements IBasicEvents, IBasicEvent
                 break;
 
             case Actions.robotBack:
+                avoidWalls();
                 radarLockOnTarget();
                 System.out.println("take Action: back ");
                 setBack(Actions.RobotMoveDistance);
@@ -979,6 +982,7 @@ public class TanRobo  extends AdvancedRobot implements IBasicEvents, IBasicEvent
                 break;
 
             case Actions.robotTurnLeft:
+                avoidWalls();
                 radarLockOnTarget();
                 System.out.println("take Action: turn left ");
                 setTurnLeft(Actions.RobotTurnDegree);
@@ -988,6 +992,7 @@ public class TanRobo  extends AdvancedRobot implements IBasicEvents, IBasicEvent
                 break;
 
             case Actions.robotTurnRight:
+                avoidWalls();
                 radarLockOnTarget();
                 System.out.println("take Action: turn right ");
                 setTurnRight(Actions.RobotTurnDegree);
@@ -997,6 +1002,7 @@ public class TanRobo  extends AdvancedRobot implements IBasicEvents, IBasicEvent
                 break;
 
             case Actions.robotSpin:
+                avoidWalls();
                 radarLockOnTarget();
                 System.out.println("take Action: spin ");
                 setTurnRight(target.getTargetBearing() + Actions.RobotTurnDegree_L);
@@ -1004,6 +1010,7 @@ public class TanRobo  extends AdvancedRobot implements IBasicEvents, IBasicEvent
 
 
             case Actions.robotFire:
+                avoidWalls();
                 System.out.println("take Action: Fire! ");
                 //radarLockOnTarget();
                 myFire();

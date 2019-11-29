@@ -1,8 +1,6 @@
 package MyRobo;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -22,25 +20,30 @@ public class NN_Robocode {
 
     private static int argNumInputs = 10 ;
     private static int argNumHidden = 14;
-    private static double argLearningRate = 0.002;
+    private static double argLearningRate = 0.01;
     private static double argMomentumRate = 0.9;
-    private static double argA = -2;
-    private static double argB = 2;
+    private static double argA = 0;
+    private static double argB = 1;
     private static double lowerBoundW = -0.5;
     private static double upperBoundW = 0.5;
     //private static NN nn = new NN(argNumInputs, argNumHidden, argLearningRate, argMomentumRate, argA, argB, lowerBoundW, upperBoundW);
     private static File lutFile = new File ("C:\\robocode\\robots\\MyRobo\\TanRobo.data\\LUT.dat") ;
-
+    private static File rmsErrFile = new File("C:\\robocode\\robots\\MyRobo\\TanRobo.data\\rmsErr.dat");
+    private static  List<Double> rmsErrArr = new ArrayList<Double>();
 
     //Training NN with LUT
     public static void main(String[] args) throws IOException {
         TanRobo robo = new TanRobo();
         LUT lut_NN = new LUT();
-        File weights_file = new File("C:\\robocode\\robots\\MyRobo\\TanRobo.data\\weights.txt");
+        File weights_file = new File("C:\\robocode\\robots\\MyRobo\\TanRobo.data\\weights.dat");
         lut_NN.load(lutFile);
+        //double[][] inputs = new double[numActions*numStates][10];
 
         List<double[]> inputs = new ArrayList<double[]>();
         List<Double> output = new ArrayList<Double>();
+
+
+
 
         //initialize input vector
         //the desired output is the q value we load from LUT
@@ -53,39 +56,45 @@ public class NN_Robocode {
         double[] _distance = new double[SegDistance2target];
         double[] _gunHeat = new double[SegGunHeat];
         double[] _x = new double[SegX];
+        double[] _y = new double[SegY];
+        int m = 0;
         for (int a = 0; a < SegDistance2target; a++) {
 
             if (a == 0) {
-                _distance[0]  = 200;
-            }
-            else if (a == 1 ) {
+                _distance[0] = 200;
+            } else if (a == 1) {
                 _distance[1] = 400;
-            }
-            else {
+            } else {
                 _distance[2] = 1000;
             }
+        }
+        for (int b = 0; b < SegGunHeat; b++) {
+
+            if (b == 0) {
+                _gunHeat[0] = 0;
+            } else {
+                _gunHeat[1] = 1;
+            }
+        }
+        for (int c = 0; c < SegX; c++) {
+
+            _x[c] = (c + 1) * 100;
+
+        }
+        for (int d = 0; d < SegY; d++) {
+            _y[d] = (d + 1) * 100;
+        }
+
+        for (int a = 0; a < SegDistance2target; a++) {
             for (int b = 0; b < SegGunHeat; b++) {
-
-                if (b == 0) {
-                    _gunHeat[0] = 0;
-                }
-                else {
-                    _gunHeat[1] = 1;
-                }
                 for (int c = 0; c < SegX; c++) {
-
-                    _x[c] = (c + 1)*100;
-
                     for (int d = 0; d < SegY; d++) {
-                        double[] _y = new double[SegY];
-                        _y[d] = (d + 1)*100;
-
                         for (int action = 0; action < numActions; action ++) {
                             double[] newInput = {
                                     2.0 * _distance[a]/1000.0 - 1,
                                     2.0 * _gunHeat[b] /1.0 - 1,
                                     2.0 * _x[c] / 800.0 - 1,
-                                    2.0 * _y[d] / 800.0 - 1
+                                    2.0 * _y[d] / 600.0 - 1
                             };
 
                             double[] action_NN = new double[numActions];
@@ -95,22 +104,38 @@ public class NN_Robocode {
                             //combine state and action
                             newInput = DoubleStream.concat(Arrays.stream(newInput), Arrays.stream(action_NN)).toArray();
 
-                            int crtState = States.Mapping[a][b][c][d];
+                            //for desired output (q values from lut)
 
-                            //for desired output we need to normalize it
-                            double newOutput = (lut_NN.qTable[crtState][action]) / 2500;
+                            int crtState = States.Mapping[a][b][c][d];
+                            double newOutput = (lut_NN.qTable[crtState][action]);
                             if (lut_NN.qTable[crtState][action] != 0) {
                                 inputs.add(newInput);
-                                output.add((lut_NN.qTable[crtState][action]) / 2500);
-                            }
-                        }
-                        }
+                                output.add(lut_NN.qTable[crtState][action]);
 
+                            }
+
+
+
+
+                        }
                     }
                 }
-
-
             }
+        }
+
+      /*  //for output
+
+        double[] myOutput = new double[numActions*numStates];
+        int k = 0;
+        for (int i = 0; i < numStates;i++) {
+            for (int j = 0; j < numActions; j++) {
+                myOutput[k++] = lut_NN.qTable[i][j]/2500;
+            }
+        }*/
+
+
+
+
 
 
 
@@ -123,17 +148,17 @@ public class NN_Robocode {
 
         //Test Constants
         double inputVector[][] = new double[inputs.size()][argNumInputs];
-        double outputVector[] = new double[inputs.size()];
+        double desiredOutput[] = new double[inputs.size()];
         inputVector = inputs.toArray(inputVector);
 
         for (int i = 0; i < output.size(); i++) {
-            outputVector[i] = output.get(i);
+            desiredOutput[i] = output.get(i);
         }
 
-        for (int k = 0; k < iterationTime; k++) {
+        for (int iter = 0; iter < iterationTime; iter++) {
             NN nn = new NN(argNumInputs, argNumHidden, argLearningRate, argMomentumRate, argA, argB, lowerBoundW, upperBoundW);
-            nn.initializeWeights();
-            nn.load(weights_file);
+            //nn.initializeWeights();
+            //nn.load(weights_file);
             totalErr = new double[inputVector.length];
 
 
@@ -142,14 +167,19 @@ public class NN_Robocode {
             for (int i = 0; i < max_epochs; i++) {
                 double sumErr = 0;
                 for (int j = 0; j < inputVector.length; j++) {
-                    totalErr[j]= nn.train(inputVector[j], outputVector[j]); //square error: error^2
+                    totalErr[j]= nn.train(inputVector[j],desiredOutput[j]); //square error: error^2
+                    //System.out.println(totalErr[j]);
                     sumErr += totalErr[j];
 
                 }
+                //System.out.println(sumErr);
                 rmsErr = Math.sqrt(sumErr/inputVector.length); //rms error
+                rmsErrArr.add(rmsErr);
 
-                System.out.println("k: "+"epoch"+i + ":" + rmsErr);
+                System.out.println(iter+": "+"epoch"+i + ":" + rmsErr);
                 nn.save(weights_file);
+                printRMSErr(rmsErrFile);
+
             }
 
             if (rmsErr < 0.05) {
@@ -159,8 +189,35 @@ public class NN_Robocode {
         }
     }
 
-    public void LoadLUT() {
-        BufferedReader reader = null;
+    public static void printRMSErr(File file) {
+        PrintStream printFile = null;
+        try {
+            double myRMSErr;
+            printFile = new PrintStream(new FileOutputStream(file));
+            for(double elment:rmsErrArr) {
+                printFile.println(elment);
+            }
+
+            if (printFile.checkError()) {
+                System.out.println("Cannot save RMS err");
+            }
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        finally {
+            try {
+                {
+                    if (printFile != null) {
+                        printFile.close();
+                    }
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+
 
     }
 }
