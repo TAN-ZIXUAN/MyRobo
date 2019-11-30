@@ -226,17 +226,12 @@ public class NN implements NeuralNetInterface {
         //## get the output y = outputFor(x)
         outputAfterActivation = outputFor(x);
         //## calculate the derivative y' = y * (1 - y)
-        double y_ = outputAfterActivation * (1 - outputAfterActivation);
+        //double y_ = outputAfterActivation * (1 - outputAfterActivation);
+        double y_ = derivative_customSigmoid(outputAfterActivation);
 
         //# Backward propagation
         //## output error: delta_y = (c-y)*f'(y)
         double outputError = (argValue - outputAfterActivation) * y_;
-        //## hidden layer error
-        double[] hiddenLayerError = new double[numHidden];
-        hiddenLayerError[argNumHidden] = 0;//bias will always be 1 so no error for bias
-        for (int i = 0; i < argNumHidden; i++) {
-            hiddenLayerError[i] = curtHidden2OutputWeights[i] * outputError * (hiddenAfterActivation[i] - argA) * (argB - hiddenAfterActivation[i]) / (argB - argA);
-        }
 
         //# update weights
         //## update weights from hidden to output
@@ -245,6 +240,15 @@ public class NN implements NeuralNetInterface {
             curtHidden2OutputWeights[i] += (argLearningRate * outputError * hiddenAfterActivation[i]) + deltaHidden2OutputWeights[i] * argMomentumRate;
             deltaHidden2OutputWeights[i] = curtHidden2OutputWeights[i] - tempHidden2OutputWeights;
         }
+
+        //## hidden layer error
+        double[] hiddenLayerError = new double[numHidden];
+        hiddenLayerError[argNumHidden] = 0;//bias will always be 1 so no error for bias
+        for (int i = 0; i < argNumHidden; i++) {
+            hiddenLayerError[i] = curtHidden2OutputWeights[i] * outputError * derivative_customSigmoid(hiddenAfterActivation[i]);
+        }
+
+
         //update weights of bias in hidden layers
         double tempHiddenBiasWeights = curtHidden2OutputWeights[argNumHidden];
         curtHidden2OutputWeights[argNumHidden] += (argLearningRate * outputError * 1) + deltaHidden2OutputWeights[argNumHidden]*argMomentumRate;
