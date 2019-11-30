@@ -3,7 +3,6 @@ package MyRobo;
 import MyRobo.Interface.NeuralNetInterface;
 
 import java.io.*;
-import java.util.Random;
 
 public class NN implements NeuralNetInterface {
 
@@ -138,10 +137,12 @@ public class NN implements NeuralNetInterface {
     //method: get random double value in a range
     public double getRandomDouble(double lowerBound, double upperBound) {
 
-        double random, result;
+        return ((double) (Math.random()*(upperBound - lowerBound))) + lowerBound;
+        /*double random, result;
         random = new Random().nextDouble();
         result = lowerBound+(random*(upperBound-lowerBound));
-        return result;
+        return result;*/
+
 
     }
 

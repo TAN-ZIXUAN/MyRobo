@@ -78,7 +78,7 @@ public class TanRobo  extends AdvancedRobot implements IBasicEvents, IBasicEvent
     private static double lowerBoundW = -5;
     private static double upperBoundW = 5;
     NN nn = new NN(argNumInputs, argNumHidden, argLearningRate, argMomentumRate, argA, argB, lowerBoundW, upperBoundW);
-    neuralNet_law lawnn = new neuralNet_law(10,1);
+    //neuralNet_law lawnn = new neuralNet_law(10,1);
     public static final int SegDistance2target = 3;    //3 segmentation close:d<=200, medium:200<d<=400, far:d>400
     public static final int SegX = 8;
     public static final int SegY = 6;
