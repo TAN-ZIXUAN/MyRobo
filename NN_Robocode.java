@@ -24,8 +24,8 @@ public class NN_Robocode {
     private static double argMomentumRate = 0.9;
     private static double argA = -1;
     private static double argB = 1;
-    private static double lowerBoundW = -0.2;
-    private static double upperBoundW = 0.2;
+    private static double lowerBoundW = -0.5;
+    private static double upperBoundW = 0.5;
     //private static NN nn = new NN(argNumInputs, argNumHidden, argLearningRate, argMomentumRate, argA, argB, lowerBoundW, upperBoundW);
     private static File lutFile = new File ("C:\\robocode\\robots\\MyRobo\\TanRobo.data\\LUT.dat") ;
     private static File rmsErrFile = new File("C:\\robocode\\robots\\MyRobo\\TanRobo.data\\rmsErr.csv");

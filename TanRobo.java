@@ -65,18 +65,22 @@ public class TanRobo  extends AdvancedRobot implements IBasicEvents, IBasicEvent
     public static double gamma = QLearning.gamma; //discount rate: gamma fire has delay rewards
     public static double epsilon = QLearning.epsilon;
 
+    private double prevQ;
+    private double crtQ;
+    private double desiredQ;
+
     private double[] prevState_NN;
     private double[] crtState_NN;
     private double[] prevAction_NN;
     private double[] crtAction_NN;
     private static int argNumInputs = 10;
     private static int argNumHidden = 14;
-    private static double argLearningRate = 0.0009;
+    private static double argLearningRate = 0.00001;
     private static double argMomentumRate = 0.9;
     private static double argA = -1;
     private static double argB = 1;
-    private static double lowerBoundW = -0.03;
-    private static double upperBoundW = 0.03;
+    private static double lowerBoundW = -0.5;
+    private static double upperBoundW = 0.5;
     NN nn = new NN(argNumInputs, argNumHidden, argLearningRate, argMomentumRate, argA, argB, lowerBoundW, upperBoundW);
     //neuralNet_law lawnn = new neuralNet_law(10,1);
     public static final int SegDistance2target = 3;    //3 segmentation close:d<=200, medium:200<d<=400, far:d>400
@@ -94,7 +98,7 @@ public class TanRobo  extends AdvancedRobot implements IBasicEvents, IBasicEvent
     private double accumReward = 0.0;
     private double rewardForWin = 10;
     private double rewardForDeath = -10;
-    private boolean interReward = false;
+    private boolean interReward = true;
 
     private int moveDirection = 1;
 
@@ -168,6 +172,28 @@ public class TanRobo  extends AdvancedRobot implements IBasicEvents, IBasicEvent
                 QLearning.epsilon = 0.9 - count / 10.0; //round as 0.0
             }
 
+            /*prevState_NN = getState_NN();
+            prevAction_NN = policySelectAction_NN(prevState_NN);
+
+            prevQ = nn.outputFor(getInputVector(prevState_NN,prevAction_NN));
+
+            if (interReward) {
+                if (findActionFromAction_NN(prevAction_NN) == Actions.robotFire && getGunHeat() != 0)
+                    reward += -3;
+            }
+            takeAction(findActionFromAction_NN(prevAction_NN));
+            reward = 0;
+
+            takeAction(findActionFromAction_NN(prevAction_NN));
+
+            prevQ = nn.outputFor(getInputVector(prevState_NN,prevAction_NN));
+            System.out.println("prevQ"+prevQ);
+            double desiredQ = Q_learning_NN(prevQ,crtState_NN,reward);*/
+
+
+
+
+
             if (ifFirstRun) {
 
                 //initial state
@@ -177,13 +203,18 @@ public class TanRobo  extends AdvancedRobot implements IBasicEvents, IBasicEvent
                 prevState_NN = getState_NN();
 
                 //random action
-                Random randomGenerator = new Random();
+                /*Random randomGenerator = new Random();
                 prevAction = randomGenerator.nextInt(Actions.numActions);
-                prevAction_NN = action_NN(prevAction);
+                prevAction_NN = action_NN(prevAction);*/
+
+                prevAction_NN = policySelectAction_NN(prevState_NN);
+                //prevQ = nn.outputFor(getInputVector(prevState_NN,prevAction_NN));
+
+
 
 
                 //take action
-                takeAction(prevAction);
+                takeAction(findActionFromAction_NN(prevAction_NN));
 
                 /*crtState = prevState;
                 crtAction = prevAction;*/
@@ -205,8 +236,8 @@ public class TanRobo  extends AdvancedRobot implements IBasicEvents, IBasicEvent
 
                /* prevState = crtState; //S <- S'
                 prevAction = crtAction;*/
-               prevState_NN = crtState_NN;
-               trainWeights(getInputVector(prevState_NN,prevAction_NN),desiredQ);
+
+
 
                 accumReward += reward;// get reward
                 accumRewardArr[(getRoundNum()) / 50] = accumReward;
@@ -217,6 +248,10 @@ public class TanRobo  extends AdvancedRobot implements IBasicEvents, IBasicEvent
                         reward += -3;
                 }
                 takeAction(findActionFromAction_NN(crtAction_NN));
+
+                trainWeights(getInputVector(prevState_NN,prevAction_NN),desiredQ);
+                prevState_NN = crtState_NN;
+                prevAction_NN = crtAction_NN;
             }
             setTurnRadarLeftRadians(getRadarTurnRemainingRadians());
         }
@@ -398,6 +433,17 @@ public class TanRobo  extends AdvancedRobot implements IBasicEvents, IBasicEvent
         // System.out.println("l");
         reward += rewardForDeath;
         //saveData();
+        /*prevQ = nn.outputFor(getInputVector(prevState_NN,prevAction_NN));
+        System.out.println("prevQ"+prevQ);
+        desiredQ = Q_learning_NN(prevQ,crtState_NN,reward);
+
+        prevState = crtState; //S <- S'
+        prevAction = crtAction;
+
+        trainWeights(getInputVector(prevState_NN,prevAction_NN),desiredQ);
+        prevState_NN = crtState_NN;*/
+
+        //trainWeights(getInputVector(prevState_NN,prevAction_NN),desiredQ);
 
 
     }
@@ -504,6 +550,19 @@ public class TanRobo  extends AdvancedRobot implements IBasicEvents, IBasicEvent
 
 
         reward += rewardForWin;
+
+        /*prevQ = nn.outputFor(getInputVector(prevState_NN,prevAction_NN));
+        System.out.println("prevQ"+prevQ);
+        desiredQ = Q_learning_NN(prevQ,crtState_NN,reward);
+
+        prevState = crtState; //S <- S'
+        prevAction = crtAction;
+
+        trainWeights(getInputVector(prevState_NN,prevAction_NN),desiredQ);
+        prevState_NN = crtState_NN;*/
+
+        //trainWeights(getInputVector(prevState_NN,prevAction_NN),desiredQ);
+
 
         //saveData();
 
@@ -1037,10 +1096,10 @@ public class TanRobo  extends AdvancedRobot implements IBasicEvents, IBasicEvent
 
         //input with normalization x_ = (x - min)/(max - min) (0~1)
         //and scale it to -1 ~ 1: x__ = 2/x_ - 1;
-        state_NN[0] = 2 * (target.getTargetDistance() / 1000.0) - 1;
-        state_NN[1] = 2 * (getGunHeat() / 1.0) - 1;
-        state_NN[2] = 2 * (getX() / 800.0) - 1;
-        state_NN[3] = 2 * (getY() / 600.0) - 1;
+        state_NN[0] =  (target.getTargetDistance() / 1000.0);
+        state_NN[1] = (getGunHeat() / 1.0) ;
+        state_NN[2] = (getX() / 800.0);
+        state_NN[3] = (getY() / 600.0);
 
         return state_NN;
     }
@@ -1087,9 +1146,12 @@ public class TanRobo  extends AdvancedRobot implements IBasicEvents, IBasicEvent
     }
 
     private void trainWeights(double[] inputVector, double desiredQ) {
-        double sqrtErr;
-        sqrtErr = Math.sqrt(nn.train(inputVector,desiredQ));
-        System.out.println(sqrtErr);
+        double max = 10;
+        for (int i = 0; i < max; i++) {
+            double sqrtErr;
+            sqrtErr = Math.sqrt(nn.train(inputVector, desiredQ));
+            System.out.println(sqrtErr);
+        }
     }
 
     private double getMaxQ_NN(double[] state_NN) {

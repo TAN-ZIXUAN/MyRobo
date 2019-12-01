@@ -194,10 +194,10 @@ public class NN implements NeuralNetInterface {
             outputLayers += curtHidden2OutputWeights[i]*hiddenAfterActivation[i];
 
         //output after activation
-        //outputAfterActivation = customSigmoid(outputLayers);
+        outputAfterActivation = customSigmoid(outputLayers);
 
         //leaky relu
-        outputAfterActivation = Leaky_ReLu(outputLayers);
+       /* outputAfterActivation = Leaky_ReLu(outputLayers);*/
 
         return outputAfterActivation;
     }
@@ -214,9 +214,9 @@ public class NN implements NeuralNetInterface {
         //## get the output y = outputFor(x)
         outputAfterActivation = outputFor(x);
         //## calculate the derivative y' = y * (1 - y)
-        //double y_ = derivative_customSigmoid(outputAfterActivation);
-        //relu
-        double y_ = Leaky_ReLu_deri(outputAfterActivation);
+        double y_ = derivative_customSigmoid(outputAfterActivation);
+        /*//relu
+        double y_ = Leaky_ReLu_deri(outputAfterActivation);*/
 
         //# Backward propagation
         //## output error: delta_y = (c-y)*f'(y)
@@ -238,9 +238,9 @@ public class NN implements NeuralNetInterface {
         double[] hiddenLayerError = new double[numHidden];
         hiddenLayerError[argNumHidden] = 0;//bias will always be 1 so no error for bias
         for (int i = 0; i < argNumHidden; i++) {
-            //hiddenLayerError[i] = curtHidden2OutputWeights[i] * outputError * derivative_customSigmoid(hiddenAfterActivation[i]);
-            //relu
-            hiddenLayerError[i] = curtHidden2OutputWeights[i] * outputError * Leaky_ReLu_deri(hiddenAfterActivation[i]);
+            hiddenLayerError[i] = curtHidden2OutputWeights[i] * outputError * derivative_customSigmoid(hiddenAfterActivation[i]);
+           /* //relu
+            hiddenLayerError[i] = curtHidden2OutputWeights[i] * outputError * Leaky_ReLu_deri(hiddenAfterActivation[i]);*/
         }
 
         //## update weights from input to hidden
