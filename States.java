@@ -29,16 +29,14 @@ public class States {
     public static final int numStates;
 
 
-    public static final int Mapping[][][][];
+    public static final int Mapping[][];
 
     static {
-        Mapping = new int[SegDistance2target][SegGunHeat][SegX][SegY];
+        Mapping = new int[SegDistance2target][SegGunHeat];
         int count = 0;
         for (int a = 0; a < SegDistance2target; a++)
             for (int b = 0; b < SegGunHeat; b++)
-                for (int e = 0; e < SegX; e++)
-                    for (int f = 0; f < SegY; f++)
-                        Mapping[a][b][e][f]= count++;
+                Mapping[a][b]= count++;
 
 
 
@@ -174,7 +172,7 @@ public class States {
         return (int)(newHeading / unit);
     }*/
 
-    public static int getIndexForStates(int distanceIndex,int gunHeatIndex, int xIndex, int yIndex) {
-        return Mapping[distanceIndex][gunHeatIndex][xIndex][yIndex];
+    public static int getIndexForStates(int distanceIndex,int gunHeatIndex) {
+        return Mapping[distanceIndex][gunHeatIndex];
     }
 }

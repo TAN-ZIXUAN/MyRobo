@@ -345,7 +345,7 @@ public class TanRobo  extends AdvancedRobot implements IBasicEvents, IBasicEvent
        // int heading_ = States.headingAfterSeg(getHeading());
         int gunHeat_ = States.gunHeatAfterSeg(getGunHeat());
 
-        int state = States.getIndexForStates(distance_,gunHeat_, x_, y_);
+        int state = States.getIndexForStates(distance_,gunHeat_);
         return state;
 
     }
