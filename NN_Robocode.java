@@ -18,7 +18,7 @@ public class NN_Robocode {
     private static int numStates = States.numStates;
     private static int numActions = Actions.numActions;
 
-    private static int argNumInputs = 10 ;
+    private static int argNumInputs = 8 ;
     private static int argNumHidden = 14;
     private static double argLearningRate = 0.0001;
     private static double argMomentumRate = 0.9;
@@ -87,14 +87,12 @@ public class NN_Robocode {
 
         for (int a = 0; a < SegDistance2target; a++) {
             for (int b = 0; b < SegGunHeat; b++) {
-                for (int c = 0; c < SegX; c++) {
-                    for (int d = 0; d < SegY; d++) {
                         for (int action = 0; action < numActions; action ++) {
                             double[] newInput = {
                                     2.0 * _distance[a]/1000.0 - 1,
                                     2.0 * _gunHeat[b] /1.0 - 1,
-                                    2.0 * _x[c] / 800.0 - 1,
-                                    2.0 * _y[d] / 600.0 - 1
+                                    /*2.0 * _x[c] / 800.0 - 1,
+                                    2.0 * _y[d] / 600.0 - 1*/
                             };
 
                             double[] action_NN = new double[numActions];
@@ -106,7 +104,7 @@ public class NN_Robocode {
 
                             //for desired output (q values from lut)
 
-                            int crtState = States.Mapping[a][b][c][d];
+                            int crtState = States.Mapping[a][b];
                             double newOutput = (1*((lut_NN.qTable[crtState][action])+0.5)/1 - 0.5);
                             if (lut_NN.qTable[crtState][action] != 0) {
                                 inputs.add(newInput);
@@ -118,8 +116,8 @@ public class NN_Robocode {
 
 
                         }
-                    }
-                }
+
+
             }
         }
 

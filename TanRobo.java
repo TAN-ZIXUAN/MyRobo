@@ -69,14 +69,14 @@ public class TanRobo  extends AdvancedRobot implements IBasicEvents, IBasicEvent
     private double[] crtState_NN;
     private double[] prevAction_NN;
     private double[] crtAction_NN;
-    private static int argNumInputs = 10;
+    private static int argNumInputs = 8;
     private static int argNumHidden = 14;
-    private static double argLearningRate = 0.0009;
+    private static double argLearningRate = 0.0001;
     private static double argMomentumRate = 0.9;
     private static double argA = -1;
     private static double argB = 1;
-    private static double lowerBoundW = -0.03;
-    private static double upperBoundW = 0.03;
+    private static double lowerBoundW = -0.5;
+    private static double upperBoundW = 0.5;
     NN nn = new NN(argNumInputs, argNumHidden, argLearningRate, argMomentumRate, argA, argB, lowerBoundW, upperBoundW);
     //neuralNet_law lawnn = new neuralNet_law(10,1);
     public static final int SegDistance2target = 3;    //3 segmentation close:d<=200, medium:200<d<=400, far:d>400
@@ -125,7 +125,7 @@ public class TanRobo  extends AdvancedRobot implements IBasicEvents, IBasicEvent
 
 
     public void run() {
-       /* try {
+        /*try {
             nn.load(weights_file);
         } catch (IOException e) {
             e.printStackTrace();
@@ -353,7 +353,7 @@ public class TanRobo  extends AdvancedRobot implements IBasicEvents, IBasicEvent
         // int heading_ = States.headingAfterSeg(getHeading());
         int gunHeat_ = States.gunHeatAfterSeg(getGunHeat());
 
-        int state = States.getIndexForStates(distance_, gunHeat_, x_, y_);
+        int state = States.getIndexForStates(distance_, gunHeat_);
         return state;
 
     }
@@ -1033,14 +1033,14 @@ public class TanRobo  extends AdvancedRobot implements IBasicEvents, IBasicEvent
 
     private double[] getState_NN() {//no quantization
         //for states in NN
-        double state_NN[] = new double[4]; //distance gunHeat X, Y
+        double state_NN[] = new double[2]; //distance gunHeat X, Y
 
         //input with normalization x_ = (x - min)/(max - min) (0~1)
         //and scale it to -1 ~ 1: x__ = 2/x_ - 1;
         state_NN[0] = 2 * (target.getTargetDistance() / 1000.0) - 1;
         state_NN[1] = 2 * (getGunHeat() / 1.0) - 1;
-        state_NN[2] = 2 * (getX() / 800.0) - 1;
-        state_NN[3] = 2 * (getY() / 600.0) - 1;
+        /*state_NN[2] = 2 * (getX() / 800.0) - 1;
+        state_NN[3] = 2 * (getY() / 600.0) - 1;*/
 
         return state_NN;
     }
