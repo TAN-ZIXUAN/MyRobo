@@ -20,15 +20,15 @@ public class NN_Robocode {
 
     private static int argNumInputs = 10 ;
     private static int argNumHidden = 14;
-    private static double argLearningRate = 0.01;
+    private static double argLearningRate = 0.0001;
     private static double argMomentumRate = 0.9;
-    private static double argA = 0;
+    private static double argA = -1;
     private static double argB = 1;
-    private static double lowerBoundW = -0.5;
-    private static double upperBoundW = 0.5;
+    private static double lowerBoundW = -0.2;
+    private static double upperBoundW = 0.2;
     //private static NN nn = new NN(argNumInputs, argNumHidden, argLearningRate, argMomentumRate, argA, argB, lowerBoundW, upperBoundW);
     private static File lutFile = new File ("C:\\robocode\\robots\\MyRobo\\TanRobo.data\\LUT.dat") ;
-    private static File rmsErrFile = new File("C:\\robocode\\robots\\MyRobo\\TanRobo.data\\rmsErr.dat");
+    private static File rmsErrFile = new File("C:\\robocode\\robots\\MyRobo\\TanRobo.data\\rmsErr.csv");
     private static  List<Double> rmsErrArr = new ArrayList<Double>();
 
     //Training NN with LUT
@@ -107,10 +107,10 @@ public class NN_Robocode {
                             //for desired output (q values from lut)
 
                             int crtState = States.Mapping[a][b][c][d];
-                            double newOutput = (lut_NN.qTable[crtState][action]);
+                            double newOutput = (1*((lut_NN.qTable[crtState][action])+0.5)/1 - 0.5);
                             if (lut_NN.qTable[crtState][action] != 0) {
                                 inputs.add(newInput);
-                                output.add(lut_NN.qTable[crtState][action]);
+                                output.add((1*((lut_NN.qTable[crtState][action])+0.5)/1 - 0.5));
 
                             }
 
@@ -142,7 +142,7 @@ public class NN_Robocode {
 
         int count = 0;
         int convergeTime = 0;
-        int iterationTime = 10;
+        int iterationTime = 1;
         double[] totalErr;
         double rmsErr = 999999; //root-mean-square error
 
@@ -163,7 +163,7 @@ public class NN_Robocode {
 
 
 
-            int max_epochs = 10000;
+            int max_epochs = 2000;
             for (int i = 0; i < max_epochs; i++) {
                 double sumErr = 0;
                 for (int j = 0; j < inputVector.length; j++) {

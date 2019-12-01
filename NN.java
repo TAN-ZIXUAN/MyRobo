@@ -6,10 +6,6 @@ import java.io.*;
 
 public class NN implements NeuralNetInterface {
 
-    //Config (bias = 1, added in input layer and hidden layer:the last item)
-    private static boolean ifBinary = true; //True: Binary representation 0,1    False: Bipolar representation -1,0,1
-    private static double totalErrorThreshold =  0.05;  //Total error should less than this value
-
     private int argNumInputs;     //The number of inputs in the input vector
     private int argNumHidden;     //The number of nodes in this single hidden layer
     //private int argNumOutputs;   //The number of outputs in the input vector
@@ -29,16 +25,10 @@ public class NN implements NeuralNetInterface {
     //let the last item be bias ;
     private int numInputs;
     private int numHidden;
-    //private int numOutputs = argNumOutputs;
 
-    //arrays to store the neuron values in input, hidden and output layers
-    private double[] inputLayers = new double[numInputs];   //contain bias
+    //arrays to store the neuron values in hidden layers
+    private double[] hiddenLayers;
     private double[] hiddenAfterActivation;
-
-
-    //delta of neurons in hidden layer and output layer
-    private double[] deltaHiddenLayer = new double[argNumHidden]; //bias node in hidden layer won't change and its value will always be 1, so no delta for hiddenLayer[4];
-    //private double[] deltaOutputLayer = new double[numOutputs];
 
     //arrays to store weights from input layer to hidden
     public static double[][] curtInput2HiddenWeights;//no input to hidden layers weights for bias node in hidden layer
@@ -64,19 +54,20 @@ public class NN implements NeuralNetInterface {
         //initializeWeights();
         numInputs = argNumInputs + 1;
         numHidden = argNumHidden + 1;
+        hiddenLayers = new double[numHidden];
         hiddenAfterActivation = new double[numHidden];
         curtInput2HiddenWeights = new double[argNumHidden][numInputs];
         deltaInput2HiddenWeights = new double[argNumHidden][numInputs];
         curtHidden2OutputWeights = new double[numHidden];
         deltaHidden2OutputWeights = new double[numHidden];
+        zeroWeights();
         initializeWeights();
 
     }
 
     @Override
     public double sigmoid(double x) {
-        if (ifBinary) return 1 / (1 + Math.exp(-x)); //Return a binary sigmoid of the input X
-        else return( 2 / (1 + Math.exp(-x)) - 1); //Return a bipolar sigmoid of the input X
+        return 0;
     }
 
     //TODO try using ReLU as activation function
@@ -128,10 +119,6 @@ public class NN implements NeuralNetInterface {
         for (double elment:deltaHidden2OutputWeights)
             elment = 0.0;*/
 
-
-
-
-
     }
 
     //method: get random double value in a range
@@ -180,9 +167,9 @@ public class NN implements NeuralNetInterface {
     @Override
     public double outputFor(double[] x) {
 
-        double[] hiddenLayers = new double[numHidden];  //contain bias
+         //contain bias
         double outputLayers;
-        double[] hiddenAfterActivation = new double[numHidden];
+
         double outputAfterActivation;
 
         //calculate the sum of weights*input = value of hidden layer neurons
@@ -207,7 +194,10 @@ public class NN implements NeuralNetInterface {
             outputLayers += curtHidden2OutputWeights[i]*hiddenAfterActivation[i];
 
         //output after activation
-        outputAfterActivation = customSigmoid(outputLayers);
+        //outputAfterActivation = customSigmoid(outputLayers);
+
+        //leaky relu
+        outputAfterActivation = Leaky_ReLu(outputLayers);
 
         return outputAfterActivation;
     }
@@ -217,8 +207,6 @@ public class NN implements NeuralNetInterface {
     //return squared error
     @Override
     public double train(double[] x, double argValue) { //x: input vector argValue: desired output
-        double[] hiddenLayers = new double[numHidden];  //contain bias
-        double outputLayers;
 
         double outputAfterActivation;
 
@@ -226,8 +214,9 @@ public class NN implements NeuralNetInterface {
         //## get the output y = outputFor(x)
         outputAfterActivation = outputFor(x);
         //## calculate the derivative y' = y * (1 - y)
-        //double y_ = outputAfterActivation * (1 - outputAfterActivation);
-        double y_ = derivative_customSigmoid(outputAfterActivation);
+        //double y_ = derivative_customSigmoid(outputAfterActivation);
+        //relu
+        double y_ = Leaky_ReLu_deri(outputAfterActivation);
 
         //# Backward propagation
         //## output error: delta_y = (c-y)*f'(y)
@@ -236,35 +225,34 @@ public class NN implements NeuralNetInterface {
         //# update weights
         //## update weights from hidden to output
         for (int i = 0; i < numHidden; i++) {
-            double tempHidden2OutputWeights = curtHidden2OutputWeights[i];
-            curtHidden2OutputWeights[i] += (argLearningRate * outputError * hiddenAfterActivation[i]) + deltaHidden2OutputWeights[i] * argMomentumRate;
-            deltaHidden2OutputWeights[i] = curtHidden2OutputWeights[i] - tempHidden2OutputWeights;
+            deltaHidden2OutputWeights[i] = (argLearningRate * outputError * hiddenAfterActivation[i]) + deltaHidden2OutputWeights[i] * argMomentumRate;
+            curtHidden2OutputWeights[i] += deltaHidden2OutputWeights[i];
         }
+        //##update weights of bias in hidden layers
+        deltaHidden2OutputWeights[argNumHidden] = (argLearningRate * outputError * 1) + deltaHidden2OutputWeights[argNumHidden]*argMomentumRate;
+        curtHidden2OutputWeights[argNumHidden] += deltaHidden2OutputWeights[argNumHidden];
+
+
 
         //## hidden layer error
         double[] hiddenLayerError = new double[numHidden];
         hiddenLayerError[argNumHidden] = 0;//bias will always be 1 so no error for bias
         for (int i = 0; i < argNumHidden; i++) {
-            hiddenLayerError[i] = curtHidden2OutputWeights[i] * outputError * derivative_customSigmoid(hiddenAfterActivation[i]);
+            //hiddenLayerError[i] = curtHidden2OutputWeights[i] * outputError * derivative_customSigmoid(hiddenAfterActivation[i]);
+            //relu
+            hiddenLayerError[i] = curtHidden2OutputWeights[i] * outputError * Leaky_ReLu_deri(hiddenAfterActivation[i]);
         }
-
-
-        //update weights of bias in hidden layers
-        double tempHiddenBiasWeights = curtHidden2OutputWeights[argNumHidden];
-        curtHidden2OutputWeights[argNumHidden] += (argLearningRate * outputError * 1) + deltaHidden2OutputWeights[argNumHidden]*argMomentumRate;
-        deltaHidden2OutputWeights[argNumHidden] = curtHidden2OutputWeights[argNumHidden] - tempHiddenBiasWeights;
 
         //## update weights from input to hidden
         for (int i = 0; i < argNumHidden; i++) {
             for (int j = 0; j < argNumInputs; j++) {
-                double tempInput2HiddenWeights = curtInput2HiddenWeights[i][j];
-                curtInput2HiddenWeights[i][j] += (argLearningRate * hiddenLayerError[i] * x[j]) + deltaInput2HiddenWeights[i][j] * argMomentumRate;
-                deltaInput2HiddenWeights[i][j] = curtInput2HiddenWeights[i][j] - tempInput2HiddenWeights;
+                deltaInput2HiddenWeights[i][j] = (argLearningRate * hiddenLayerError[i] * x[j]) + deltaInput2HiddenWeights[i][j] * argMomentumRate;
+                curtInput2HiddenWeights[i][j] += deltaInput2HiddenWeights[i][j];
             }
             //update bias in input layer
-            double tempInputBiasWeights = curtInput2HiddenWeights[i][argNumInputs];
-            curtInput2HiddenWeights[i][argNumInputs] += (argLearningRate * hiddenLayerError[i] * 1) + deltaInput2HiddenWeights[i][argNumInputs] * argMomentumRate;
-            deltaInput2HiddenWeights[i][argNumInputs] = curtInput2HiddenWeights[i][argNumInputs] - tempInputBiasWeights;
+            deltaInput2HiddenWeights[i][argNumInputs] = (argLearningRate * hiddenLayerError[i] * 1) + deltaInput2HiddenWeights[i][argNumInputs] * argMomentumRate;
+            curtInput2HiddenWeights[i][argNumInputs] += deltaInput2HiddenWeights[i][argNumInputs];
+
         }
         //return squared error
         return Math.pow((outputAfterActivation - argValue), 2);
@@ -345,6 +333,14 @@ public class NN implements NeuralNetInterface {
 
     }
 
+    public double Leaky_ReLu(double x){
+        return Math.max(0.01*x,x);
+    }
+
+    public static double Leaky_ReLu_deri(double x){
+        if(x>0){return 1;}
+        else {return 0.01;}
+    }
 
 
 

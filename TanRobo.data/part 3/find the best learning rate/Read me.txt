@@ -1,0 +1,10 @@
+不变的量
+    private static int argNumInputs = 10 ;
+    private static int argNumHidden = 14;
+    private static double argMomentumRate = 0.9;
+    private static double argA = -1;
+    private static double argB = 1;
+    private static double lowerBoundW = -0.5;
+    private static double upperBoundW = 0.5;
+
+训练一万次

@@ -70,13 +70,13 @@ public class TanRobo  extends AdvancedRobot implements IBasicEvents, IBasicEvent
     private double[] prevAction_NN;
     private double[] crtAction_NN;
     private static int argNumInputs = 10;
-    private static int argNumHidden = 20;
-    private static double argLearningRate = 0.002;
+    private static int argNumHidden = 14;
+    private static double argLearningRate = 0.0009;
     private static double argMomentumRate = 0.9;
-    private static double argA = 0;
+    private static double argA = -1;
     private static double argB = 1;
-    private static double lowerBoundW = -5;
-    private static double upperBoundW = 5;
+    private static double lowerBoundW = -0.03;
+    private static double upperBoundW = 0.03;
     NN nn = new NN(argNumInputs, argNumHidden, argLearningRate, argMomentumRate, argA, argB, lowerBoundW, upperBoundW);
     //neuralNet_law lawnn = new neuralNet_law(10,1);
     public static final int SegDistance2target = 3;    //3 segmentation close:d<=200, medium:200<d<=400, far:d>400
@@ -118,7 +118,7 @@ public class TanRobo  extends AdvancedRobot implements IBasicEvents, IBasicEvent
     private File accumRewardFile;
     private static double[] accumRewardArr = new double[10000000];
 
-    File weights_file = new File("C:\\robocode\\robots\\MyRobo\\TanRobo.data\\weights.txt");
+    File weights_file = new File("C:\\robocode\\robots\\MyRobo\\TanRobo.data\\weights.dat");
 
     public TanRobo() throws IOException {
     }

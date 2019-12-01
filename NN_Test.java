@@ -6,10 +6,10 @@ import java.util.List;
 
 public class NN_Test {
 
-    private static int argNumInputs = 2 ;
+    private static int argNumInputs = 2;
     private static int argNumHidden = 4;
     private static double argLearningRate = 0.2;
-    private static double argMomentumRate = 0.9;
+    private static double argMomentumRate = 0.0;
     private static double argA = -1;
     private static double argB = 1;
     private static double lowerBoundW = -0.5;
@@ -23,6 +23,8 @@ public class NN_Test {
         File weights_file = new File("C:\\robocode\\robots\\MyRobo\\TanRobo.data\\Test_weights.dat");
         double[][] inputVector = {{-1,-1},{-1,1},{1,-1},{1,1}};
         double[] desiredOutput = {-1,1,1,-1};
+        /*double[][] inputVector = {{0, 0}, {0, 1}, {1, 0}, {1, 1}};
+        double[] desiredOutput = {0, 1, 1, 0};*/
 
         int count = 0;
         int convergeTime = 0;
